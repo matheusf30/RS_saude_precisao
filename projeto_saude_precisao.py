@@ -90,7 +90,7 @@ class Projeto:
 				if extensao == ".csv":
 					arquivo = pd.read_csv(f"{caminho_dados}{arquivo}", **kwargs)
 				elif extensao == ".xlsx":
-					arquivo = pd.read_excel(f"{caminho_dados}{arquivo}", engine = "calamine", **kwargs) #"openpyxl"
+					arquivo = pd.read_excel(f"{caminho_dados}{arquivo}", engine = "openpyxl", **kwargs) #"calamine""openpyxl"
 			case ".nc":
 				_LOCAL = caminho #"SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 				if _LOCAL == "SIFAPSC":
@@ -139,7 +139,8 @@ prec24 = xr.open_dataset(f'{caminho_merge}{merge24}')
 
 projeto = Projeto()
 meteoro = projeto.abrir_arquivo("SIFAPSC", "meteo_poa_h_96-22.csv", ".csv", skiprows = 15, sep = ";")
-bio = projeto.abrir_arquivo("SIFAPSC", "sinan_total_poa_96-22.xlsx", ".xlsx")
+bio = projeto.abrir_arquivo("SIFAPSC", "sinan_total_poa_96-22.csv", ".csv")
+#bio = projeto.abrir_arquivo("SIFAPSC", "sinan_total_poa_96-22.xlsx", ".xlsx")
 
 sys.exit()
 
