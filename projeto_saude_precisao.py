@@ -11,7 +11,7 @@ from matplotlib import cm
 import matplotlib.colors as cls
 # Clima
 import xarray as xr
-from netCDF4 import Dataset                     
+#from netCDF4 import Dataset                     
 import cartopy, cartopy.crs as ccrs       
 import cartopy.io.shapereader as shpreader
 import cartopy.crs as crs
@@ -68,18 +68,18 @@ class Projeto:
 		print("\n" + "="*80 + "\n")
 		"""
 
-	def abrir_arquivo(self, caminho, nome, extensao, aba = None, netcdf = None):
+	def abrir_arquivo(self, caminho, nome, extensao, **kwargs):
 		#### Encaminhamento aos Diretórios
 		match extensao:
-			case ".csv":
+			case ".csv" | ".xlsx":
 				_LOCAL = caminho #"SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 				if _LOCAL == "GH": # _ = Variável Privada
 					caminho_dados = "https://raw.githubusercontent.com/matheusf30/RS_saude_precisao/main/dados/"
 					#caminho_modelos = "https://github.com/matheusf30/dados_dengue/tree/main/modelos/"
 				elif _LOCAL == "SIFAPSC":
-					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao"
+					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
 				elif _LOCAL == "CLUSTER":
-					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao"
+					caminho_dados = "..."
 				elif _LOCAL == "CASA":
 					caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
 					caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
@@ -87,7 +87,10 @@ class Projeto:
 					print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 				print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 				arquivo = nome
-				arquivo = pd.read_csv(f"{caminho_dados}{arquivo}")
+				if extensao == ".csv":
+					arquivo = pd.read_csv(f"{caminho_dados}{arquivo}", **kwargs)
+				elif extensao == ".xlsx":
+					arquivo = pd.read_excel(f"{caminho_dados}{arquivo}", engine = "calamine", **kwargs) #"openpyxl"
 			case ".nc":
 				_LOCAL = caminho #"SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 				if _LOCAL == "SIFAPSC":
@@ -135,7 +138,8 @@ prec24 = xr.open_dataset(f'{caminho_merge}{merge24}')
 ########################### TESTANDO CLASSE ####################################
 
 projeto = Projeto()
-arquivo = projeto.abrir_arquivo("SIFAPSC", "meteo_poa_h_96-22.csv", ".csv")
+meteoro = projeto.abrir_arquivo("SIFAPSC", "meteo_poa_h_96-22.csv", ".csv", skiprows = 15, sep = ";")
+bio = projeto.abrir_arquivo("SIFAPSC", "sinan_total_poa_96-22.xlsx", ".xlsx")
 
 sys.exit()
 
