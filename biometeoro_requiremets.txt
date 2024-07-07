@@ -186,7 +186,6 @@ pyqt5-sip                 12.13.0         py312h5eee18b_0
 pyshp                     2.3.1           py312h06a4308_0  
 pysocks                   1.7.1           py312h06a4308_0  
 python                    3.12.2          hab00c5b_0_cpython    conda-forge
-python-calamine           0.2.0           py312h4b3b743_0    conda-forge
 python-dateutil           2.9.0post0      py312h06a4308_2  
 python-tzdata             2023.3             pyhd3eb1b0_0  
 python_abi                3.12                    4_cp312    conda-forge
