@@ -78,25 +78,25 @@ class Projeto:
 					#caminho_modelos = "https://github.com/matheusf30/dados_dengue/tree/main/modelos/"
 				elif _LOCAL == "SIFAPSC":
 					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao"
-				"""
-				elif _LOCAL == "CLUSTER"
+				elif _LOCAL == "CLUSTER":
 					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao"
 				elif _LOCAL == "CASA":
 					caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
 					caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
-				"""
 				else:
 					print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 				print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
+				arquivo = nome
+				arquivo = pd.read_csv(f"{caminho_dados}{arquivo}")
 			case ".nc":
 				_LOCAL = caminho #"SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 				if _LOCAL == "SIFAPSC":
 					match netcdf:
 						case "samet":
-							caminho_samet = "/dados/operacao/samet/clima/"
+							caminho_dados = "/dados/operacao/samet/clima/"
 						case "merge":
-							caminho_merge = "/dados/operacao/merge/CDO.MERGE/"
-				elif _LOCAL == "CLUSTER"
+							caminho_dados = "/dados/operacao/merge/CDO.MERGE/"
+				elif _LOCAL == "CLUSTER":
 					caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao"
 				elif _LOCAL == "GH":
 					caminho_dados = "https://raw.githubusercontent.com/matheusf30/dados_dengue/main/"
@@ -107,8 +107,11 @@ class Projeto:
 				else:
 					print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 				print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
-
-
+				arquivo = nome
+				arquivo = xr.open_dataset(f"{caminho_dados}{arquivo}")
+		print(f"{ansi['green']}\nABRINDO ARQUIVO COM SUCESSO:\n\n{ansi['reset']}{arquivo}\n")
+		return arquivo
+"""
 # Renomeação de dados e variáveis
 samet_tmin = "TMIN/SAMeT_CPTEC_DAILY_TMIN_SB_2000_2023.nc"
 samet_tmin24 = "TMIN/SAMeT_CPTEC_DAILY_TMIN_SB_2000_2024.nc"
@@ -128,8 +131,13 @@ tmax = xr.open_dataset(f'{caminho_samet}{samet_tmax}')
 prec = xr.open_dataset(f'{caminho_merge}{merge}')
 prec_sc = xr.open_dataset(f'{caminho_dados}{prec_sc}')
 prec24 = xr.open_dataset(f'{caminho_merge}{merge24}')
-
+"""
 ########################### TESTANDO CLASSE ####################################
+
+projeto = Projeto()
+arquivo = projeto.abrir_arquivo("SIFAPSC", "meteo_poa_h_96-22.csv", ".csv")
+
+sys.exit()
 
 class Saude:
 
