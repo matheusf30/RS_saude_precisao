@@ -29,7 +29,7 @@ _HORIZONTE = 0 # Tempo de Previsão
 _JANELA_MM = 0 # Média Móvel
 _K = 0 # constante para formar MM
 
-cidade = "Florianópolis"
+cidade = "Porto Alegre"
 
 _AUTOMATIZA = False
 
@@ -135,6 +135,7 @@ total.reset_index(inplace = True)
 biometeoro = meteoro.merge(total, on = "data", how = "inner")
 biometeoro = biometeoro[["data", "obito", "temp", "umidade", "prec", "pressao", "ventodir",  "ventovel"]]
 
+
 print(80*"=")
 print(bio, bio.info())
 print(80*"=")
@@ -146,55 +147,50 @@ print(meteoro, meteoro.info())
 print(80*"=")
 print(biometeoro, biometeoro.info())
 
-
-
-
-sys.exit()
+# Visualização Prévia
+"""
+plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
+ax1 = plt.gca()
+sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"],
+             color = "black", alpha = 0.7, linewidth = 1, label = "Óbitos", ax = ax1)
+ax2 = ax1.twinx()
+sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"],
+             color = "red", alpha = 0.7, linewidth = 1, label = "Temperatura", ax = ax2)
+ax1.legend(loc = "upper left")
+#sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
+#             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
+plt.show()
+"""
 
 ### Montando Dataset
-dataset = tmin[["Semana"]].copy()
-dataset["TMIN"] = tmin[cidade].copy()
-dataset["TMED"] = tmed[cidade].copy()
-dataset["TMAX"] = tmax[cidade].copy()
-dataset = dataset.merge(prec[["Semana", cidade]], how = "left", on = "Semana").copy()
-dataset = dataset.merge(focos[["Semana", cidade]], how = "left", on = "Semana").copy()
-troca_nome = {f"{cidade}_x" : "PREC", f"{cidade}_y" : "FOCOS"}
-dataset = dataset.rename(columns = troca_nome)
+dataset = biometeoro.copy()
+dataset.dropna(inplace = True)
+print(dataset)
 
 for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
-    dataset[f"TMIN_r{r}"] = dataset["TMIN"].shift(-r)
-    dataset[f"TMED_r{r}"] = dataset["TMED"].shift(-r)
-    dataset[f"TMAX_r{r}"] = dataset["TMAX"].shift(-r)
-    dataset[f"PREC_r{r}"] = dataset["PREC"].shift(-r)
-    dataset[f"FOCOS_r{r}"] = dataset["FOCOS"].shift(-r)
-dataset.drop(columns = ["TMIN", "TMED", "TMAX", "PREC"], inplace = True)
+    dataset[f"temp_r{r}"] = dataset["temp"].shift(-r)
+    dataset[f"umidade_r{r}"] = dataset["umidade"].shift(-r)
+    dataset[f"prec_r{r}"] = dataset["prec"].shift(-r)
+    dataset[f"pressao_r{r}"] = dataset["pressao"].shift(-r)
+    dataset[f"ventodir_r{r}"] = dataset["ventodir"].shift(-r)
+    dataset[f"ventovel_r{r}"] = dataset["ventovel"].shift(-r)
+#dataset.drop(columns = ["temp", "umidade", "prec", "pressao", "ventodir", "ventovel"], inplace = True)
 dataset.dropna(inplace = True)
-dataset.set_index("Semana", inplace = True)
+dataset.set_index("data", inplace = True)
 dataset.columns.name = f"{cidade}"
 
-"""
-dataset["iCLIMA"] =  (dataset["TMIN"].rolling(_K).mean() ** _K) * (dataset["PREC"].rolling(_K).mean() / _K)
+print(dataset)
 
-for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
-	#dataset[f"TMIN_r{r}"] = dataset["TMIN"].shift(-r)
-	#dataset[f"TMED_r{r}"] = dataset["TMED"].shift(-r)
-	#dataset[f"TMAX_r{r}"] = dataset["TMAX"].shift(-r)
-	#dataset[f"PREC_r{r}"] = dataset["PREC"].shift(-r)
-	dataset[f"FOCOS_r{r}"] = dataset["FOCOS"].shift(-r)
-	dataset[f"iCLIMA_r{r}"] = dataset["iCLIMA"].shift(-r)
-dataset.drop(columns = ["TMIN", "TMED", "TMAX", "PREC", "iCLIMA"], inplace = True)
-dataset.dropna(inplace = True)
-dataset.set_index("Semana", inplace = True)
-dataset.columns.name = f"{cidade}"
-"""
+#sys.exit()
+
 ### Dividindo Dataset em Treino e Teste
 SEED = np.random.seed(0)
-x = dataset.drop(columns = "FOCOS")
-y = dataset["FOCOS"]
+x = dataset.drop(columns = "obito")
+y = dataset["obito"]
 x_array = x.to_numpy().astype(int)
 y_array = y.to_numpy().astype(int)
 x_array = x_array.reshape(x_array.shape[0], -1)
-"""
+
 treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
                                                         random_state = SEED,
                                                         test_size = 0.2)
@@ -207,15 +203,18 @@ treino_x = x_ate_limite.copy()
 teste_x = xlimite.copy()
 treino_y = y_ate_limite.copy()
 teste_y = ylimite.copy()
+
 explicativas = x.columns.tolist() # feature_names = explicativas
 treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-print(f"""Conjunto de Treino com as Variáveis Explicativas (<{limite}):\n{treino_x}\n
-Conjunto de Treino com as Variáveis Explicativas (>{fim}):\n{teste_x}\n 
-Conjunto de Teste com a Variável Dependente (<{limite}):\n{treino_y}\n 
-Conjunto de Teste com a Variável Dependente (>{fim}):\n{teste_y}\n
-Conjunto de Treino com as Variáveis Explicativas (Explicitamente Indicadas)(<{limite}):\n{treino_x_explicado}\n""")
+"""
+#print(f"""Conjunto de Treino com as Variáveis Explicativas (<{limite}):\n{treino_x}\n
+#Conjunto de Treino com as Variáveis Explicativas (>{fim}):\n{teste_x}\n 
+#Conjunto de Teste com a Variável Dependente (<{limite}):\n{treino_y}\n 
+#Conjunto de Teste com a Variável Dependente (>{fim}):\n{teste_y}\n
+#Conjunto de Treino com as Variáveis Explicativas (Explicitamente Indicadas)(<{limite}):\n{treino_x_explicado}\n""")
 #sys.exit()
+
 """
 ### Normalizando/Escalonando Dataset_x (Se Necessário)
 escalonador = StandardScaler()
@@ -273,6 +272,8 @@ print(f"Treinando com {len(treino_x)} elementos e testando com {len(teste_x)} el
 print(f"Formato dos dados (X) nas divisões treino: {treino_x.shape} e teste: {teste_x.shape}.")
 print(f"Formato dos dados (Y) nas divisões treino: {treino_y.shape} e teste: {teste_y.shape}.")
 print("="*80)
+
+sys.exit()
 
 #########################################################FUNÇÕES###############################################################
 ### Definições
