@@ -27,7 +27,7 @@ _LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 _RETROAGIR = 7 # Dias
 _HORIZONTE = 0 # Tempo de Previsão
 _JANELA_MM = 0 # Média Móvel
-_K = 3 # constante para form
+_K = 0 # constante para formar MM
 
 cidade = "Florianópolis"
 
@@ -91,67 +91,65 @@ tmax = pd.read_csv(f"{caminho_dados}{tmax}", low_memory = False)
 
 
 
+### Pré-Processamento
 
-
+# BIO-SAÚDE
 bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
 bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
+bio.reset_index(inplace = True)
 bio["obito"] = np.ones(len(bio)).astype(int)
-bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace=True)
+bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace = True)
 bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
-bio = bio.groupby(by = ["data"])["obito"].sum()
-#total = bio.groupby(by = ["data"])["obito"].sum()
+#bio = bio.groupby(by = ["data"])["obito"].sum()
+total = bio.groupby(by = ["data"])["obito"].sum()
 #sexo = bio.groupby(by = ["data", "sexo"])["obito"].sum()
 #idade = bio.groupby(by = ["data", "idade"])["obito"].sum()
 #causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
+
+# METEOROLOGIA
+meteoro.rename(columns = {"Data Medicao" : "data",
+						"Hora Medicao" : "hora",
+						"PRECIPITACAO TOTAL, HORARIO(mm)" : "prec",
+						"PRESSAO ATMOSFERICA AO NIVEL DO MAR, HORARIA(mB)" : "pressao",
+						"TEMPERATURA DO AR - BULBO SECO, HORARIA(°C)" : "temp",
+						"UMIDADE RELATIVA DO AR, HORARIA(%)" : "umidade",
+						"VENTO, DIRECAO HORARIA(codigo)" : "ventodir",
+						"VENTO, VELOCIDADE HORARIA(m/s)" : "ventovel"}, inplace = True)
+meteoro.drop(columns = "Unnamed: 8", inplace = True)
+colunas_objt = meteoro.select_dtypes(include='object').columns
+meteoro = meteoro.replace("," , ".")
+meteoro[colunas_objt] = meteoro[colunas_objt].apply(lambda x: x.str.replace(",", "."))
+meteoro["prec"] = pd.to_numeric(meteoro["prec"], errors = "coerce")
+meteoro["pressao"] = pd.to_numeric(meteoro["pressao"], errors = "coerce")
+meteoro["temp"] = pd.to_numeric(meteoro["temp"], errors = "coerce")
+meteoro["ventovel"] = pd.to_numeric(meteoro["ventovel"], errors = "coerce")
+prec = meteoro.groupby(by = ["data"])["prec"].sum()
+meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
+meteoro = meteoro.merge(prec, on = "data", how = "right")
+
+# BIOMETEORO
+meteoro.reset_index(inplace = True)
+meteoro["data"] = pd.to_datetime(meteoro["data"])
+total = total.to_frame(name = "obito")
+total.reset_index(inplace = True)
+biometeoro = meteoro.merge(total, on = "data", how = "inner")
+biometeoro = biometeoro[["data", "obito", "temp", "umidade", "prec", "pressao", "ventodir",  "ventovel"]]
+
+print(80*"=")
+print(bio, bio.info())
+print(80*"=")
+print(total, total.info())
+print(80*"=")
+print(prec, prec.info())
 print(80*"=")
 print(meteoro, meteoro.info())
 print(80*"=")
-print(bio, bio.info())
-
-
+print(biometeoro, biometeoro.info())
 
 
 
 
 sys.exit()
-### Recortes Temporais
-_ANO = "2022" # apenas ano de 2022
-casos = casos.iloc[:467] # Pois os casos estão até 2023 e o restante até 2022!
-focos = focos.iloc[:573] # Desconsiderando 2023
-unicos = unicos.iloc[:151] # Desconsiderando 2023
-
-### Sanando Erros
-unicos = pd.read_csv(f"{caminho_dados}{unicos}")
-cidades = unicos["Município"].copy()
-# ValueError: cannot reshape array of size 0 into shape (0,newaxis)
-# ValueError: This RandomForestRegressor estimator requires y to be passed, but the target y is None.
-# KeyError: 'CIDADE' The above exception was the direct cause of the following exception:
-# raise KeyError(key) from err KeyError: 'CIDADE'
-print("!"*80)
-print("\nERROS GERADOS\n")
-value_error = ["BALNEÁRIO CAMBORIÚ", "BOMBINHAS", "PORTO BELO"]
-key_error = ["ABELARDO LUZ", "ÁGUA DOCE", "AGROLÂNDIA", "AGRONÔMICA"]
-for erro in value_error:
-    cidades = cidades[cidades != erro]
-    if erro not in unicos["Município"]:
-        print(f"{erro} não está no conjunto de dados!")
-    else:
-        print(f"No sé qué se pasa! {erro} está no conjunto de dados!")
-for erro in key_error: 
-    cidades = cidades[cidades != erro] 
-    if erro not in unicos["Município"]:
-        print(f"{erro} não está no conjunto de dados!")
-    else:
-        print(f"No sé qué se pasa! {erro} está no conjunto de dados!")
-print("!"*80)    
-
-### Pré-Processamento
-cidade = cidade.upper()
-focos["Semana"] = pd.to_datetime(focos["Semana"])#, format="%Y%m%d")
-prec["Semana"] = pd.to_datetime(prec["Semana"])
-tmin["Semana"] = pd.to_datetime(tmin["Semana"])
-tmed["Semana"] = pd.to_datetime(tmed["Semana"])
-tmax["Semana"] = pd.to_datetime(tmax["Semana"])
 
 ### Montando Dataset
 dataset = tmin[["Semana"]].copy()
