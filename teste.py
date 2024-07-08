@@ -55,7 +55,7 @@ obs = f"(Treino até {limite}; Teste após {fim})"
 #########################################################################
 
 ### Encaminhamento aos Diretórios
-_LOCAL = caminho #"SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
+_LOCAL = "SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 if _LOCAL == "GH": # _ = Variável Privada
 	caminho_dados = "https://raw.githubusercontent.com/matheusf30/RS_saude_precisao/main/dados/"
 	#caminho_modelos = "https://github.com/matheusf30/dados_dengue/tree/main/modelos/"
@@ -71,33 +71,32 @@ else:
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
-focos = "focos_pivot.csv"
+meteoro = "meteo_poa_h_96-22.csv"
+bio = "sinan_total_poa_96-22.csv"
 """
-prec = "merge_se.csv"
-tmin = "tmin_se.csv"
-tmed = "tmed_se.csv"
-tmax = "tmax_se.csv"
-unicos = "unicos_xy.csv"
-"""
-unicos = "casos_unicos.csv"
 prec = "prec_semana_ate_2023.csv"
 tmin = "tmin_semana_ate_2023.csv"
 tmed = "tmed_semana_ate_2023.csv"
 tmax = "tmax_semana_ate_2023.csv"
-
+"""
 ### Abrindo Arquivo
-focos = pd.read_csv(f"{caminho_dados}{focos}")
+meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", skiprows = 15, sep = ";", low_memory = False)
+bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
+"""
 prec = pd.read_csv(f"{caminho_dados}{prec}")
 tmin = pd.read_csv(f"{caminho_dados}{tmin}", low_memory = False)
 tmed = pd.read_csv(f"{caminho_dados}{tmed}", low_memory = False)
 tmax = pd.read_csv(f"{caminho_dados}{tmax}", low_memory = False)
 """
+print(80*"=", meteoro, 80*"=", meteoro.info(), 80*"=")
+print(80*"=", bio,80*"=",  bio.info(), 80*"=")
+sys.exit()
 ### Recortes Temporais
 _ANO = "2022" # apenas ano de 2022
 casos = casos.iloc[:467] # Pois os casos estão até 2023 e o restante até 2022!
 focos = focos.iloc[:573] # Desconsiderando 2023
 unicos = unicos.iloc[:151] # Desconsiderando 2023
-"""
+
 ### Sanando Erros
 unicos = pd.read_csv(f"{caminho_dados}{unicos}")
 cidades = unicos["Município"].copy()
