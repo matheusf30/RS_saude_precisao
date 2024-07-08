@@ -80,7 +80,7 @@ tmed = "tmed_semana_ate_2023.csv"
 tmax = "tmax_semana_ate_2023.csv"
 """
 ### Abrindo Arquivo
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", skiprows = 15, sep = ";", low_memory = False)
+meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", skiprows = 10, sep = ";", low_memory = False)
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
 """
 prec = pd.read_csv(f"{caminho_dados}{prec}")
@@ -88,8 +88,31 @@ tmin = pd.read_csv(f"{caminho_dados}{tmin}", low_memory = False)
 tmed = pd.read_csv(f"{caminho_dados}{tmed}", low_memory = False)
 tmax = pd.read_csv(f"{caminho_dados}{tmax}", low_memory = False)
 """
-print(80*"=", meteoro, 80*"=", meteoro.info(), 80*"=")
-print(80*"=", bio,80*"=",  bio.info(), 80*"=")
+
+
+
+
+
+bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
+bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
+bio["obito"] = np.ones(len(bio)).astype(int)
+bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace=True)
+bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
+bio = bio.groupby(by = ["data"])["obito"].sum()
+#total = bio.groupby(by = ["data"])["obito"].sum()
+#sexo = bio.groupby(by = ["data", "sexo"])["obito"].sum()
+#idade = bio.groupby(by = ["data", "idade"])["obito"].sum()
+#causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
+print(80*"=")
+print(meteoro, meteoro.info())
+print(80*"=")
+print(bio, bio.info())
+
+
+
+
+
+
 sys.exit()
 ### Recortes Temporais
 _ANO = "2022" # apenas ano de 2022
