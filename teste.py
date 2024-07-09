@@ -10,6 +10,8 @@ import os
 import sys
 import joblib
 # Pré-Processamento e Validações
+from imblearn.over_sampling import SMOTE, RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, accuracy_score, r2_score#, RocCurveDisplay
@@ -30,6 +32,7 @@ _JANELA_MM = 0 # Média Móvel
 _K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
+cidade = cidade.upper()
 
 _AUTOMATIZA = False
 
@@ -61,6 +64,8 @@ if _LOCAL == "GH": # _ = Variável Privada
 	#caminho_modelos = "https://github.com/matheusf30/dados_dengue/tree/main/modelos/"
 elif _LOCAL == "SIFAPSC":
 	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
+	caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+	caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
 elif _LOCAL == "CLUSTER":
 	caminho_dados = "..."
 elif _LOCAL == "CASA":
@@ -152,7 +157,7 @@ print(biometeoro, biometeoro.info())
 plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 ax1 = plt.gca()
 sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"],
-             color = "black", alpha = 0.7, linewidth = 1, label = "Óbitos", ax = ax1)
+             color = "black", alpha = 0.7, linewidth = 1, label = "obitos", ax = ax1)
 ax2 = ax1.twinx()
 sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"],
              color = "red", alpha = 0.7, linewidth = 1, label = "Temperatura", ax = ax2)
@@ -176,6 +181,7 @@ for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
     dataset[f"ventovel_r{r}"] = dataset["ventovel"].shift(-r)
 #dataset.drop(columns = ["temp", "umidade", "prec", "pressao", "ventodir", "ventovel"], inplace = True)
 dataset.dropna(inplace = True)
+data_dataset = dataset.copy()
 dataset.set_index("data", inplace = True)
 dataset.columns.name = f"{cidade}"
 
@@ -203,11 +209,16 @@ treino_x = x_ate_limite.copy()
 teste_x = xlimite.copy()
 treino_y = y_ate_limite.copy()
 teste_y = ylimite.copy()
+"""
+sobre = RandomOverSampler(sampling_strategy = "minority")
+sub = RandomUnderSampler(sampling_strategy = "majority")
+treino_x, treino_y = sobre.fit_resample(treino_x, treino_y)
+treino_x, treino_y = sub.fit_resample(treino_x, treino_y)
 
 explicativas = x.columns.tolist() # feature_names = explicativas
 treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-"""
+
 #print(f"""Conjunto de Treino com as Variáveis Explicativas (<{limite}):\n{treino_x}\n
 #Conjunto de Treino com as Variáveis Explicativas (>{fim}):\n{teste_x}\n 
 #Conjunto de Teste com a Variável Dependente (<{limite}):\n{treino_y}\n 
@@ -239,8 +250,8 @@ print("="*80)
 
 ### Dividindo Dataset em Treino e Teste
 SEED = np.random.seed(0)
-x = dataset.drop(columns = "FOCOS")
-y = dataset["FOCOS"]
+x = dataset.drop(columns = "obito")
+y = dataset["obito"]
 x_array = x.to_numpy().astype(int)
 y_array = y.to_numpy().astype(int)
 x_array = x_array.reshape(x_array.shape[0], -1)
@@ -273,35 +284,35 @@ print(f"Formato dos dados (X) nas divisões treino: {treino_x.shape} e teste: {t
 print(f"Formato dos dados (Y) nas divisões treino: {treino_y.shape} e teste: {teste_y.shape}.")
 print("="*80)
 
-sys.exit()
+#sys.exit()
 
 #########################################################FUNÇÕES###############################################################
 ### Definições
 def monta_dataset(cidade):
-    dataset = tmin[["Semana"]].copy()
+    dataset = tmin[["Data"]].copy()
     dataset["TMIN"] = tmin[cidade].copy()
     dataset["TMED"] = tmed[cidade].copy()
     dataset["TMAX"] = tmax[cidade].copy()
-    dataset = dataset.merge(prec[["Semana", cidade]], how = "left", on = "Semana").copy()
-    dataset = dataset.merge(focos[["Semana", cidade]], how = "left", on = "Semana").copy()
-    troca_nome = {f"{cidade}_x" : "PREC", f"{cidade}_y" : "FOCOS"}
+    dataset = dataset.merge(prec[["Data", cidade]], how = "left", on = "Data").copy()
+    dataset = dataset.merge(obitos[["Data", cidade]], how = "left", on = "Data").copy()
+    troca_nome = {f"{cidade}_x" : "PREC", f"{cidade}_y" : "obito"}
     dataset = dataset.rename(columns = troca_nome)
     for r in range(5, _RETROAGIR + 1):
         dataset[f"TMIN_r{r}"] = dataset["TMIN"].shift(-r)
         dataset[f"TMED_r{r}"] = dataset["TMED"].shift(-r)
         dataset[f"TMAX_r{r}"] = dataset["TMAX"].shift(-r)
         dataset[f"PREC_r{r}"] = dataset["PREC"].shift(-r)
-        dataset[f"FOCOS_r{r}"] = dataset["FOCOS"].shift(-r)
+        dataset[f"obitos_r{r}"] = dataset["obito"].shift(-r)
     dataset.drop(columns = ["TMIN", "TMED", "TMAX", "PREC"], inplace = True)
     dataset.dropna(inplace = True)
-    dataset.set_index("Semana", inplace = True)
+    dataset.set_index("Data", inplace = True)
     dataset.columns.name = f"{cidade}"
     return dataset
 
 def treino_teste(dataset, cidade):
     SEED = np.random.seed(0)
-    x = dataset.drop(columns = "FOCOS")
-    y = dataset["FOCOS"]
+    x = dataset.drop(columns = "obito")
+    y = dataset["obito"]
     if x.empty or x.isnull().all().all():
         print(f"'X' está vazio ou contém apenas valores 'NaN! Confira o dataset do município {cidade}!")
         print(f"{cidade} possui um conjunto com erro:\n {x}")
@@ -353,7 +364,7 @@ def RF_previsao_metricas(dataset, previsoes, n, teste_y, y_previsto):
     nome_modelo = "Random Forest"
     print("="*80)
     print(f"\n{nome_modelo.upper()} - {cidade}\n")
-    lista_op = [f"Focos: {dataset['FOCOS'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+    lista_op = [f"obitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
     print("\n".join(lista_op))
     print("~"*80)
     EQM = mean_squared_error(teste_y, y_previsto)
@@ -379,8 +390,8 @@ def salva_modeloRF(modelo, cidade):
         cidade = cidade.replace(velho, novo)
     if not os.path.exists(caminho_modelos):
         os.makedirs(caminho_modelos)
-    joblib.dump(modelo, f"{caminho_modelos}RF_focos_r{_RETROAGIR}_{cidade}.h5")
-    print(f"\nMODELO RANDOM FOREST DE {cidade} SALVO!\n\nCaminho e Nome:\n {caminho_modelos}RF_focos_r{_RETROAGIR}_{cidade}.h5")
+    joblib.dump(modelo, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
+    print(f"\nMODELO RANDOM FOREST DE {cidade} SALVO!\n\nCaminho e Nome:\n {caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
     print("\n" + "="*80 + "\n")
 
 def lista_previsao(previsao, n, string_modelo):
@@ -393,7 +404,7 @@ def lista_previsao(previsao, n, string_modelo):
     previsoes = previsao if string_modelo == "RF" else [np.argmax(p) for p in previsao]
     print("="*80)
     print(f"\n{nome_modelo.upper()} - {cidade}\n")
-    lista_op = [f"Focos: {dataset['FOCOS'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+    lista_op = [f"Óbitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
     print("\n".join(lista_op))
     print("="*80)
 
@@ -406,10 +417,15 @@ def grafico_previsao(previsao, teste, string_modelo):
     # Gráfico de Comparação entre Observação e Previsão dos Modelos
     nome_modelo = "Random Forest" if string_modelo == "RF" else "Rede Neural"
     final = pd.DataFrame()
-    final["Semana"] = focos["Semana"]
-    final["Focos"] = focos[cidade]
+    final["Data"] = data_dataset["data"]
+    final["obito"] = data_dataset["obito"]
+    final.reset_index(inplace = True)
+    final.drop(columns = "index", inplace = True)
+    print(final)
+    #sys.exit()
     final.drop([d for d in range(_RETROAGIR)], axis=0, inplace = True)
     final.drop(final.index[-_RETROAGIR:], axis=0, inplace = True)
+    print(final)
     previsoes = previsao if string_modelo == "RF" else [np.argmax(p) for p in previsao]
     """
     lista_previsao = [previsoes[v] for v in range(len(previsoes))]
@@ -417,17 +433,17 @@ def grafico_previsao(previsao, teste, string_modelo):
     """
     previsoes = previsoes[:len(final)]
     final["Previstos"] = previsoes
-    final["Semana"] = pd.to_datetime(final["Semana"])
+    final["Data"] = pd.to_datetime(final["Data"])
     print(final)
     print("="*80)
     plt.figure(figsize = (10, 6), layout = "constrained", frameon = False)
-    sns.lineplot(x = final["Semana"], y = final["Focos"], # linestyle = "--" linestyle = "-."
+    sns.lineplot(x = final["Data"], y = final["obito"], # linestyle = "--" linestyle = "-."
                  color = "darkblue", linewidth = 1, label = "Observado")
-    sns.lineplot(x = final["Semana"], y = final["Previstos"],
+    sns.lineplot(x = final["Data"], y = final["Previstos"],
                  color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
     plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
     plt.xlabel("Semanas Epidemiológicas na Série de Anos")
-    plt.ylabel("Número de Focos de _Aedes_ sp.")
+    plt.ylabel("Número de obitos de _Aedes_ sp.")
     troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
            'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
          'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
@@ -437,7 +453,7 @@ def grafico_previsao(previsao, teste, string_modelo):
     _cidade = cidade
     for velho, novo in troca.items():
         _cidade = _cidade.replace(velho, novo)
-    #plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_focos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
+    #plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
     plt.show()
 
 def metricas(string_modelo, modeloNN = None):
@@ -478,7 +494,7 @@ def metricas_importancias(modeloRF, explicativas):
 	importancia_impureza.plot.bar(yerr = std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
 	ax.set_ylabel("Impureza Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de Focos de _Aedes_ sp.")
+	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = "horizontal")
 	for i, v in enumerate(importancia_impureza.values):
@@ -494,7 +510,7 @@ def metricas_importancias(modeloRF, explicativas):
 	importancia_permuta.plot.bar(yerr = resultado_permuta.importances_std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
 	ax.set_ylabel("Acurácia Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de Focos de _Aedes_ sp.")
+	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = "horizontal")
 	for i, v in enumerate(importancia_permuta.values):
@@ -516,9 +532,9 @@ def salva_modelo(string_modelo, modeloNN = None):
             print("!!"*80)
             raise ValueError("'modeloNN' não foi fornecido para a função metricas() do modelo de rede neural!")
         else:
-            modeloNN.save(modeloNN, f"{caminho_modelos}NN_focos_r{_RETROAGIR}_{cidade}.h5")
+            modeloNN.save(modeloNN, f"{caminho_modelos}NN_obitos_r{_RETROAGIR}_{cidade}.h5")
     else:
-        joblib.dump(modeloRF, f"{caminho_modelos}RF_focos_r{_RETROAGIR}_{cidade}.h5")
+        joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
 
 ######################################################RANDOM_FOREST############################################################
 
@@ -543,6 +559,9 @@ grafico_previsao(previsoesRF, testesRF, "RF")
 metricas("RF")
 
 importancias, indices, variaveis_importantes =  metricas_importancias(modeloRF, explicativas)
+
+sys.exit()
+
 #########################################################AUTOMATIZANDO###############################################################
 if _AUTOMATIZA == True:
     for cidade in cidades:
