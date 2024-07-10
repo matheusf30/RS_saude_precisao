@@ -153,7 +153,7 @@ print(80*"=")
 print(biometeoro, biometeoro.info())
 
 # Visualização Prévia
-"""
+
 plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 ax1 = plt.gca()
 sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"],
@@ -165,7 +165,7 @@ ax1.legend(loc = "upper left")
 #sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
 #             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
 plt.show()
-"""
+
 
 ### Montando Dataset
 dataset = biometeoro.copy()
