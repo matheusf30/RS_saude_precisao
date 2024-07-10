@@ -436,7 +436,7 @@ def grafico_previsao(previsao, teste, string_modelo):
     final["Data"] = pd.to_datetime(final["Data"])
     print(final)
     print("="*80)
-    plt.figure(figsize = (10, 6), layout = "constrained", frameon = False)
+    plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
     sns.lineplot(x = final["Data"], y = final["obito"], # linestyle = "--" linestyle = "-."
                  color = "darkblue", linewidth = 1, label = "Observado")
     sns.lineplot(x = final["Data"], y = final["Previstos"],
@@ -489,14 +489,14 @@ def metricas_importancias(modeloRF, explicativas):
 	print(variaveis_importantes)
 	#1 Impurezas
 	std = np.std([tree.feature_importances_ for tree in modeloRF.estimators_], axis=0)
-	fig, ax = plt.subplots(figsize = (10, 6), layout = "constrained", frameon = False)
+	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_impureza = importancia_impureza.sort_values(ascending = False)
 	importancia_impureza.plot.bar(yerr = std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
 	ax.set_ylabel("Impureza Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
-	plt.xticks(rotation = "horizontal")
+	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_impureza.values):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
@@ -506,13 +506,13 @@ def metricas_importancias(modeloRF, explicativas):
 	resultado_permuta = permutation_importance(modeloRF, teste_x, teste_y, n_repeats = n_permuta, random_state = SEED, n_jobs = 2)
 	importancia_permuta = pd.Series(resultado_permuta.importances_mean, index = explicativas)
 	importancia_permuta = importancia_permuta.sort_values(ascending = False)
-	fig, ax = plt.subplots(figsize = (10, 6), layout = "constrained", frameon = False)
+	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_permuta.plot.bar(yerr = resultado_permuta.importances_std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
 	ax.set_ylabel("Acurácia Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
-	plt.xticks(rotation = "horizontal")
+	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_permuta.values):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
