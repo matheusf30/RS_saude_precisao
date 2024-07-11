@@ -441,7 +441,7 @@ def grafico_previsao(previsao, teste, string_modelo):
                  color = "darkblue", linewidth = 1, label = "Observado")
     sns.lineplot(x = final["Data"], y = final["Previstos"],
                  color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
-    plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
+    plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
     plt.xlabel("Semanas Epidemiológicas na Série de Anos")
     plt.ylabel("Número de obitos de _Aedes_ sp.")
     troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
@@ -492,7 +492,7 @@ def metricas_importancias(modeloRF, explicativas):
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_impureza = importancia_impureza.sort_values(ascending = False)
 	importancia_impureza.plot.bar(yerr = std, ax = ax)
-	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
+	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Impureza Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
@@ -508,7 +508,7 @@ def metricas_importancias(modeloRF, explicativas):
 	importancia_permuta = importancia_permuta.sort_values(ascending = False)
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_permuta.plot.bar(yerr = resultado_permuta.importances_std, ax = ax)
-	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, SANTA CATARINA.\n{obs}")
+	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Acurácia Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
 	ax.set_facecolor("honeydew")
@@ -520,6 +520,46 @@ def metricas_importancias(modeloRF, explicativas):
 	print(f"\nVARIÁVEIS IMPORTANTES:\n{importancia_impureza}\n")
 	print(f"\nVARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO:\n{importancia_permuta}")
 	return importancias, indices, variaveis_importantes
+
+def caminho_decisao(x, modelo, explicativas):
+		#amostra = x.iloc[0].values.reshape(1, -1)
+		#caminho, _ = modelo.decision_path(amostra)
+		#caminho_denso = caminho.toarray()
+		unica_arvore = modelo.estimators_[0]
+		relatorio_decisao = export_text(unica_arvore, feature_names = explicativas,
+										spacing = 5, decimals = 0, show_weights = True)
+		plt.figure(figsize = (25, 10), layout = "constrained", frameon = False)
+		ax = plt.gca()
+		for i, child in enumerate(ax.get_children()):
+			if isinstance(child, plt.Line2D):
+				if i % 2 == 0:
+					child.set_color("red")
+				else:
+					child.set_color("blue")
+		plt.title(f"ÁRVORE DE DECISÃO DO MODELO RANDOM FOREST.\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.")
+		plot_tree(unica_arvore, feature_names = explicativas, filled = True, rounded = True, fontsize = 6,
+					proportion = True, node_ids = True, precision = 0, impurity = False)#, max_depth = 6) # impureza = ErroQuadrático
+		ax.set_facecolor("honeydew")
+		if _SALVAR == True:
+			troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
+		     'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
+		     'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
+		     'Ó': 'O', 'Ô': 'O', 'Ò': 'O', 'Õ': 'O', 'Ö': 'O',
+		     'Ú': 'U', 'Û': 'U', 'Ù': 'U', 'Ũ': 'U', 'Ü': 'U',
+		     'Ç': 'C', " " : "_", "'" : "_", "-" : "_"}
+			_cidade = cidade
+			for velho, novo in troca.items():
+				_cidade = _cidade.replace(velho, novo)
+			plt.savefig(f'{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.pdf', format = "pdf", dpi = 1200)
+			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.pdf{ansi['reset']}\n")
+			with open(f'{caminho_importancia}arvore_decisao_modelo_RF_{var_str}_{_cidade}.txt', 'w') as file:
+				file.write(relatorio_decisao)
+			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.txt{ansi['reset']}\n")
+		if _VISUALIZAR == True:
+			print("\n\n{ansi['green']}RELATÓRIO DA ÁRVORE DE DECISÃO\n\n{cidade}\n\n{cidade}{ansi['reset']}\n\n", relatorio_decisao)
+			plt.show()
+		#print("\n\nCAMINHO DE DECISÃO\n\n", caminho_denso)
+		return unica_arvore, relatorio_decisao #amostra, caminho, caminho_denso
 
 def salva_modelo(string_modelo, modeloNN = None):
     if string_modelo not in ["RF", "NN"]:
@@ -537,6 +577,10 @@ def salva_modelo(string_modelo, modeloNN = None):
         joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
 
 ######################################################RANDOM_FOREST############################################################
+
+_SALVAR = False
+
+_VISUALIZAR = True
 
 ### Instanciando e Treinando Modelo Regressor Random Forest
 modeloRF = RandomForestRegressor(n_estimators = 100, random_state = SEED) #n_estimators = número de árvores
@@ -559,7 +603,7 @@ grafico_previsao(previsoesRF, testesRF, "RF")
 metricas("RF")
 
 importancias, indices, variaveis_importantes =  metricas_importancias(modeloRF, explicativas)
-
+unica_arvore, relatorio_decisao = caminho_decisao(x, modeloRF, explicativas)
 sys.exit()
 
 #########################################################AUTOMATIZANDO###############################################################
