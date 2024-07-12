@@ -77,7 +77,7 @@ print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminh
 
 ### Renomeação das Variáveis pelos Arquivos
 meteoro = "meteo_poa_h_96-22.csv"
-bio = "sinan_total_poa_96-22.csv"
+bio = "obito_cardiovasc_total_poa_96-22.csv"
 """
 prec = "prec_semana_ate_2023.csv"
 tmin = "tmin_semana_ate_2023.csv"
@@ -121,6 +121,7 @@ meteoro.rename(columns = {"Data Medicao" : "data",
 						"VENTO, DIRECAO HORARIA(codigo)" : "ventodir",
 						"VENTO, VELOCIDADE HORARIA(m/s)" : "ventovel"}, inplace = True)
 meteoro.drop(columns = "Unnamed: 8", inplace = True)
+
 colunas_objt = meteoro.select_dtypes(include='object').columns
 meteoro = meteoro.replace("," , ".")
 meteoro[colunas_objt] = meteoro[colunas_objt].apply(lambda x: x.str.replace(",", "."))
@@ -128,9 +129,23 @@ meteoro["prec"] = pd.to_numeric(meteoro["prec"], errors = "coerce")
 meteoro["pressao"] = pd.to_numeric(meteoro["pressao"], errors = "coerce")
 meteoro["temp"] = pd.to_numeric(meteoro["temp"], errors = "coerce")
 meteoro["ventovel"] = pd.to_numeric(meteoro["ventovel"], errors = "coerce")
+meteoro.dropna(axis = 0, inplace = True)
 prec = meteoro.groupby(by = ["data"])["prec"].sum()
+tmax = meteoro.groupby(by = ["data"])["temp"].max()
+tmin = meteoro.groupby(by = ["data"])["temp"].min()
+urmin = meteoro.groupby(by = ["data"])["umidade"].min()
+urmax = meteoro.groupby(by = ["data"])["umidade"].max()
 meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
 meteoro = meteoro.merge(prec, on = "data", how = "right")
+meteoro = meteoro.merge(tmax, on = "data", how = "right")
+meteoro = meteoro.merge(tmin, on = "data", how = "right")
+meteoro = meteoro.merge(urmax, on = "data", how = "right")
+meteoro = meteoro.merge(urmin, on = "data", how = "right")
+meteoro.rename(columns = {"temp_x" : "tmin",
+						"temp_y" : "tmax",
+						"umidade_x" : "urmin",
+						"umidade_y" : "urmax"}, inplace = True)
+meteoro["amplitude_t"] = meteoro["tmax"] - meteoro["tmin"]
 
 # BIOMETEORO
 meteoro.reset_index(inplace = True)
@@ -138,7 +153,10 @@ meteoro["data"] = pd.to_datetime(meteoro["data"])
 total = total.to_frame(name = "obito")
 total.reset_index(inplace = True)
 biometeoro = meteoro.merge(total, on = "data", how = "inner")
-biometeoro = biometeoro[["data", "obito", "temp", "umidade", "prec", "pressao", "ventodir",  "ventovel"]]
+biometeoro = biometeoro[["data", "obito",
+						"tmin", "temp", "tmax", "amplitude_t",
+						"urmin", "umidade", "urmax",
+						"prec", "pressao", "ventodir", "ventovel"]]
 
 
 print(80*"=")
@@ -152,16 +170,29 @@ print(meteoro, meteoro.info())
 print(80*"=")
 print(biometeoro, biometeoro.info())
 
+#sys.exit()
+
 # Visualização Prévia
 
 plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 ax1 = plt.gca()
 sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"],
-             color = "black", alpha = 0.7, linewidth = 1, label = "obitos", ax = ax1)
+             color = "black", alpha = 1, linewidth = 1, label = "Óbitos", ax = ax1)
 ax2 = ax1.twinx()
 sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"],
-             color = "red", alpha = 0.7, linewidth = 1, label = "Temperatura", ax = ax2)
+            color = "gold", alpha = 0.7, linewidth = 1,
+			label = "Temperatura Média", ax = ax2)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["tmin"],
+            color = "blue", alpha = 0.7, linewidth = 1,
+			label = "Temperatura Mínima", ax = ax2)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"],
+            color = "red", alpha = 0.7, linewidth = 1,
+			label = "Temperatura Máxima", ax = ax2)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["amplitude_t"],
+            color = "green", alpha = 0.7, linewidth = 1,
+			label = "Amplitude Térmica", ax = ax2)
 ax1.legend(loc = "upper left")
+ax2.legend(loc = "upper right")
 #sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
 #             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
 plt.show()
@@ -173,13 +204,20 @@ dataset.dropna(inplace = True)
 print(dataset)
 
 for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
+    dataset[f"tmin_r{r}"] = dataset["tmin"].shift(-r)
     dataset[f"temp_r{r}"] = dataset["temp"].shift(-r)
+    dataset[f"tmax_r{r}"] = dataset["tmax"].shift(-r)
+    dataset[f"amplitude_t_r{r}"] = dataset["amplitude_t"].shift(-r)
+    dataset[f"urmin_r{r}"] = dataset["urmin"].shift(-r)
     dataset[f"umidade_r{r}"] = dataset["umidade"].shift(-r)
+    dataset[f"urmax_r{r}"] = dataset["urmax"].shift(-r)
     dataset[f"prec_r{r}"] = dataset["prec"].shift(-r)
     dataset[f"pressao_r{r}"] = dataset["pressao"].shift(-r)
     dataset[f"ventodir_r{r}"] = dataset["ventodir"].shift(-r)
     dataset[f"ventovel_r{r}"] = dataset["ventovel"].shift(-r)
-#dataset.drop(columns = ["temp", "umidade", "prec", "pressao", "ventodir", "ventovel"], inplace = True)
+#dataset.drop(columns = ["tmin", "temp", "tmax",
+#						"urmin", "umidade", "urmax",
+#						"prec", "pressao", "ventodir",  "ventovel"], inplace = True)
 dataset.dropna(inplace = True)
 data_dataset = dataset.copy()
 dataset.set_index("data", inplace = True)
