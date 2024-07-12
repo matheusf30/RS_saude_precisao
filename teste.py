@@ -130,22 +130,23 @@ meteoro["pressao"] = pd.to_numeric(meteoro["pressao"], errors = "coerce")
 meteoro["temp"] = pd.to_numeric(meteoro["temp"], errors = "coerce")
 meteoro["ventovel"] = pd.to_numeric(meteoro["ventovel"], errors = "coerce")
 meteoro = meteoro.groupby("data").filter(lambda x: len(x) == 3)
+print(meteoro)
+#sys.exit()
 prec = meteoro.groupby(by = ["data"])["prec"].sum()
 tmax = meteoro.groupby(by = ["data"])["temp"].max()
 tmin = meteoro.groupby(by = ["data"])["temp"].min()
 urmin = meteoro.groupby(by = ["data"])["umidade"].min()
 urmax = meteoro.groupby(by = ["data"])["umidade"].max()
 meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
-meteoro = meteoro.merge(prec, on = "data", how = "right")
-meteoro = meteoro.merge(tmax, on = "data", how = "right")
-meteoro = meteoro.merge(tmin, on = "data", how = "right")
-meteoro = meteoro.merge(urmax, on = "data", how = "right")
-meteoro = meteoro.merge(urmin, on = "data", how = "right")
-meteoro.rename(columns = {"temp_x" : "tmin",
-						"temp_y" : "tmax",
-						"umidade_x" : "urmin",
-						"umidade_y" : "urmax"}, inplace = True)
+print(tmin)
+meteoro["prec"] = prec
+meteoro["tmin"] = tmin
+meteoro["tmax"] = tmax
+meteoro["urmin"] = urmin
+meteoro["urmax"] = urmax
 meteoro["amplitude_t"] = meteoro["tmax"] - meteoro["tmin"]
+print(meteoro)
+#sys.exit()
 
 # BIOMETEORO
 meteoro.reset_index(inplace = True)
