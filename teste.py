@@ -22,6 +22,11 @@ from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
 from sklearn.tree import export_graphviz, export_text, plot_tree
 #from sklearn.utils.graph import single_source_shortest_path_lenght as short_path
 
+##### Padrão ANSI ##################################
+ansi = {"bold" : "\033[1m", "red" : "\033[91m",
+        "green" : "\033[92m", "yellow" : "\033[33m",
+        "blue" : "\033[34m", "magenta" : "\033[35m",
+        "cyan" : "\033[36m", "white" : "\033[37m", "reset" : "\033[0m"}
 ### Condições para Variar #################################################
 _LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 
@@ -33,6 +38,17 @@ _K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
 cidade = cidade.upper()
+troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
+         'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
+         'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
+         'Ó': 'O', 'Ô': 'O', 'Ò': 'O', 'Õ': 'O', 'Ö': 'O',
+         'Ú': 'U', 'Û': 'U', 'Ù': 'U', 'Ũ': 'U', 'Ü': 'U',
+         'Ç': 'C', " " : "_", "'" : "_", "-" : "_"}
+for velho, novo in troca.items():
+	_cidade = cidade.replace(velho, novo)
+	_cidade = _cidade.replace(" ", "_")
+print(_cidade)
+#sys.exit()
 
 _AUTOMATIZA = False
 
@@ -177,25 +193,31 @@ print(biometeoro, biometeoro.info())
 
 plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 ax1 = plt.gca()
-sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"],
-             color = "black", alpha = 1, linewidth = 1, label = "Óbitos", ax = ax1)
-ax2 = ax1.twinx()
-sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"],
+sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"], zorder = 1,
             color = "gold", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Média", ax = ax2)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["tmin"],
+			label = "Temperatura Média", ax = ax1)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["tmin"], zorder = 1,
             color = "blue", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Mínima", ax = ax2)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"],
+			label = "Temperatura Mínima", ax = ax1)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"], zorder = 1,
             color = "red", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Máxima", ax = ax2)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["amplitude_t"],
+			label = "Temperatura Máxima", ax = ax1)
+sns.lineplot(x = biometeoro["data"], y = biometeoro["amplitude_t"], zorder = 2,
             color = "green", alpha = 0.7, linewidth = 1,
-			label = "Amplitude Térmica", ax = ax2)
+			label = "Amplitude Térmica", ax = ax1)
+ax2 = ax1.twinx()
+sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"], zorder = 2,
+             color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
 ax1.legend(loc = "upper left")
+ax1.grid(True)
 ax2.legend(loc = "upper right")
+ax2.grid(True)
+ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS E ÓBITOS CARDIOVASCULARES.\nSÉRIE HISTÓRICA, {cidade}.")
+ax1.set_facecolor("honeydew")
+ax2.set_facecolor("honeydew")
 #sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
 #             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
+plt.savefig(f'{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf', format = "pdf", dpi = 1200)
 plt.show()
 
 
@@ -429,7 +451,7 @@ def salva_modeloRF(modelo, cidade):
         cidade = cidade.replace(velho, novo)
     if not os.path.exists(caminho_modelos):
         os.makedirs(caminho_modelos)
-    joblib.dump(modelo, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
+    joblib.dump(modelo, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
     print(f"\nMODELO RANDOM FOREST DE {cidade} SALVO!\n\nCaminho e Nome:\n {caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
     print("\n" + "="*80 + "\n")
 
@@ -481,8 +503,8 @@ def grafico_previsao(previsao, teste, string_modelo):
     sns.lineplot(x = final["Data"], y = final["Previstos"],
                  color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
     plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
-    plt.xlabel("Semanas Epidemiológicas na Série de Anos")
-    plt.ylabel("Número de obitos de _Aedes_ sp.")
+    plt.xlabel("Série Histórica (Observação Diária)")
+    plt.ylabel("Número de Óbitos Cardiovasculares.")
     troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
            'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
          'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
@@ -492,7 +514,7 @@ def grafico_previsao(previsao, teste, string_modelo):
     _cidade = cidade
     for velho, novo in troca.items():
         _cidade = _cidade.replace(velho, novo)
-    #plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
+    plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
     plt.show()
 
 def metricas(string_modelo, modeloNN = None):
@@ -533,12 +555,13 @@ def metricas_importancias(modeloRF, explicativas):
 	importancia_impureza.plot.bar(yerr = std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Impureza Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
+	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_impureza.values):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
+	plt.savefig(f'{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
 	plt.show()
 	#2 Permutações
 	n_permuta = 10
@@ -549,12 +572,13 @@ def metricas_importancias(modeloRF, explicativas):
 	importancia_permuta.plot.bar(yerr = resultado_permuta.importances_std, ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Acurácia Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de obitos de _Aedes_ sp.")
+	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_permuta.values):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
+	plt.savefig(f'{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
 	plt.show()
 	print(f"\nVARIÁVEIS IMPORTANTES:\n{importancia_impureza}\n")
 	print(f"\nVARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO:\n{importancia_permuta}")
@@ -589,11 +613,11 @@ def caminho_decisao(x, modelo, explicativas):
 			_cidade = cidade
 			for velho, novo in troca.items():
 				_cidade = _cidade.replace(velho, novo)
-			plt.savefig(f'{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.pdf', format = "pdf", dpi = 1200)
-			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.pdf{ansi['reset']}\n")
-			with open(f'{caminho_importancia}arvore_decisao_modelo_RF_{var_str}_{_cidade}.txt', 'w') as file:
+			plt.savefig(f'{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.pdf', format = "pdf", dpi = 1200)
+			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.pdf{ansi['reset']}\n")
+			with open(f'{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.txt', 'w') as file:
 				file.write(relatorio_decisao)
-			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_importancia}arvore_decisao_modelo_RF_{_cidade}.txt{ansi['reset']}\n")
+			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.txt{ansi['reset']}\n")
 		if _VISUALIZAR == True:
 			print("\n\n{ansi['green']}RELATÓRIO DA ÁRVORE DE DECISÃO\n\n{cidade}\n\n{cidade}{ansi['reset']}\n\n", relatorio_decisao)
 			plt.show()
@@ -611,19 +635,21 @@ def salva_modelo(string_modelo, modeloNN = None):
             print("!!"*80)
             raise ValueError("'modeloNN' não foi fornecido para a função metricas() do modelo de rede neural!")
         else:
-            modeloNN.save(modeloNN, f"{caminho_modelos}NN_obitos_r{_RETROAGIR}_{cidade}.h5")
+            modeloNN.save(modeloNN, f"{caminho_modelos}NN_obitos_r{_RETROAGIR}_{_cidade}.h5")
     else:
-        joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{cidade}.h5")
+        joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
 
 ######################################################RANDOM_FOREST############################################################
 
-_SALVAR = False
+_SALVAR = True
 
 _VISUALIZAR = True
 
 ### Instanciando e Treinando Modelo Regressor Random Forest
 modeloRF = RandomForestRegressor(n_estimators = 100, random_state = SEED) #n_estimators = número de árvores
 modeloRF.fit(treino_x_explicado, treino_y)
+#modeloRF.salva_modelo("RF")
+joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
 
 ### Testando e Avaliando
 y_previstoRF = modeloRF.predict(teste_x)
