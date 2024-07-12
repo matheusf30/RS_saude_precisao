@@ -121,7 +121,7 @@ meteoro.rename(columns = {"Data Medicao" : "data",
 						"VENTO, DIRECAO HORARIA(codigo)" : "ventodir",
 						"VENTO, VELOCIDADE HORARIA(m/s)" : "ventovel"}, inplace = True)
 meteoro.drop(columns = "Unnamed: 8", inplace = True)
-
+meteoro.dropna(axis = 0, inplace = True)
 colunas_objt = meteoro.select_dtypes(include='object').columns
 meteoro = meteoro.replace("," , ".")
 meteoro[colunas_objt] = meteoro[colunas_objt].apply(lambda x: x.str.replace(",", "."))
@@ -129,7 +129,6 @@ meteoro["prec"] = pd.to_numeric(meteoro["prec"], errors = "coerce")
 meteoro["pressao"] = pd.to_numeric(meteoro["pressao"], errors = "coerce")
 meteoro["temp"] = pd.to_numeric(meteoro["temp"], errors = "coerce")
 meteoro["ventovel"] = pd.to_numeric(meteoro["ventovel"], errors = "coerce")
-meteoro.dropna(axis = 0, inplace = True)
 prec = meteoro.groupby(by = ["data"])["prec"].sum()
 tmax = meteoro.groupby(by = ["data"])["temp"].max()
 tmin = meteoro.groupby(by = ["data"])["temp"].min()
