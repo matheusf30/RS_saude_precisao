@@ -28,8 +28,16 @@ ansi = {"bold" : "\033[1m", "red" : "\033[91m",
         "blue" : "\033[34m", "magenta" : "\033[35m",
         "cyan" : "\033[36m", "white" : "\033[37m", "reset" : "\033[0m"}
 ### Condições para Variar #################################################
+
 _LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
 
+##################### Valores Booleanos #######
+_AUTOMATIZAR = sys.argv[1]         # True #####
+                                   # False ####
+_VISUALIZAR = False                        ####
+                                           ####
+_SALVAR = True                             ####
+###############################################
 
 _RETROAGIR = 7 # Dias
 _HORIZONTE = 0 # Tempo de Previsão
@@ -50,27 +58,6 @@ for velho, novo in troca.items():
 print(_cidade)
 #sys.exit()
 
-_AUTOMATIZA = False
-
-
-z = 6
-limite = "out2023"
-fim = "nov2023"
-
-z = 19
-limite = "jul2023"
-fim = "ago2023"
-
-z = 32
-limite = "abr2023"
-fim = "mai2023"
-
-z = 50
-limite = "dez2022"
-fim = "jan2023"
-"""
-"""
-obs = f"(Treino até {limite}; Teste após {fim})"
 #########################################################################
 
 ### Encaminhamento aos Diretórios
@@ -641,10 +628,6 @@ def salva_modelo(string_modelo, modeloNN = None):
 
 ######################################################RANDOM_FOREST############################################################
 
-_SALVAR = True
-
-_VISUALIZAR = True
-
 ### Instanciando e Treinando Modelo Regressor Random Forest
 modeloRF = RandomForestRegressor(n_estimators = 100, random_state = SEED) #n_estimators = número de árvores
 modeloRF.fit(treino_x_explicado, treino_y)
@@ -672,7 +655,7 @@ unica_arvore, relatorio_decisao = caminho_decisao(x, modeloRF, explicativas)
 sys.exit()
 
 #########################################################AUTOMATIZANDO###############################################################
-if _AUTOMATIZA == True:
+if _AUTOMATIZAR == True:
     for cidade in cidades:
         dataset = monta_dataset(cidade)
         treino_x, teste_x, treino_y, teste_y, treino_x_explicado = treino_teste(dataset, cidade)
