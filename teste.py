@@ -213,8 +213,10 @@ ax1.set_facecolor("honeydew")
 ax2.set_facecolor("honeydew")
 #sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
 #             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
-plt.savefig(f'{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf', format = "pdf", dpi = 1200)
-plt.show()
+if _SALVAR == True:
+	plt.savefig(f'{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf', format = "pdf", dpi = 1200)
+if _VISUALIZAR == True:
+	plt.show()
 
 
 ### Montando Dataset
