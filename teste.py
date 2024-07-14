@@ -27,17 +27,21 @@ ansi = {"bold" : "\033[1m", "red" : "\033[91m",
         "green" : "\033[92m", "yellow" : "\033[33m",
         "blue" : "\033[34m", "magenta" : "\033[35m",
         "cyan" : "\033[36m", "white" : "\033[37m", "reset" : "\033[0m"}
-### Condições para Variar #################################################
 
-_LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
-
-##################### Valores Booleanos #######
-_AUTOMATIZAR = sys.argv[1]         # True #####
-                                   # False ####
-_VISUALIZAR = False                        ####
-                                           ####
-_SALVAR = True                             ####
-###############################################
+### CONDIÇÕES PARA VARIAR ##################################
+                                                       #####
+_LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"         #####
+                                                       #####
+##################### Valores Booleanos #######        #####
+_AUTOMATIZAR = sys.argv[1]         # True #####        #####
+                                   # False ####        #####
+_VISUALIZAR = sys.argv[2]                  ####        #####
+                                           ####        #####
+_SALVAR = sys.argv[3]                      ####        #####
+###############################################        #####
+                                                       #####
+############################################################
+        
 
 _RETROAGIR = 7 # Dias
 _HORIZONTE = 0 # Tempo de Previsão
