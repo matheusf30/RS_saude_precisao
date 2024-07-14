@@ -3,7 +3,8 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns 
+import seaborn as sns
+from scipy.ndimage import gaussian_filter1d
 #import datetime
 # Suporte
 import os
@@ -181,6 +182,10 @@ print(biometeoro, biometeoro.info())
 #sys.exit()
 
 # Visualização Prévia
+
+tmin22_se["suave"] = tmin22_se["total"]
+tmin22_se["suave"] = gaussian_filter1d(tmin22_se["suave"],
+                                       sigma = 1)
 
 plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 ax1 = plt.gca()
