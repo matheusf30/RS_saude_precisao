@@ -30,19 +30,18 @@ ansi = {"bold" : "\033[1m", "red" : "\033[91m",
 
 ### CONDIÇÕES PARA VARIAR ##################################
                                                        #####
-_LOCAL = "IFSC" # OPÇÕES>>> "GH" "CASA" "IFSC"         #####
+_LOCAL = "SIFAPSC" # OPÇÕES>>>GH|CASA|CLUSTER|SIFAPSC  #####
                                                        #####
 ##################### Valores Booleanos #######        #####
-_AUTOMATIZAR = sys.argv[1]         # True #####        #####
-                                   # False ####        #####
-_VISUALIZAR = sys.argv[2]                  ####        #####
+_AUTOMATIZAR = sys.argv[1]   # True|False #####        #####
                                            ####        #####
-_SALVAR = sys.argv[3]                      ####        #####
+_VISUALIZAR = sys.argv[2]    # True|False  ####        #####
+                                           ####        #####
+_SALVAR = sys.argv[3]        # True|False  ####        #####
 ###############################################        #####
                                                        #####
 ############################################################
         
-
 _RETROAGIR = 7 # Dias
 _HORIZONTE = 0 # Tempo de Previsão
 _JANELA_MM = 0 # Média Móvel
@@ -65,21 +64,22 @@ print(_cidade)
 #########################################################################
 
 ### Encaminhamento aos Diretórios
-_LOCAL = "SIFAPSC" # OPÇÕES>>> "GH" "CASA" "IFSC"
-if _LOCAL == "GH": # _ = Variável Privada
-	caminho_dados = "https://raw.githubusercontent.com/matheusf30/RS_saude_precisao/main/dados/"
-	#caminho_modelos = "https://github.com/matheusf30/dados_dengue/tree/main/modelos/"
-elif _LOCAL == "SIFAPSC":
-	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
-	caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
-	caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
-elif _LOCAL == "CLUSTER":
-	caminho_dados = "..."
-elif _LOCAL == "CASA":
-	caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
-	caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
-else:
-	print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
+match _LOCAL:
+	case "GH":
+		caminho_dados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/dados/"
+		caminho_resultados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/resultados/porto_alegre/"
+		caminho_modelos = "https://github.com/matheusf30/RS_saude_precisao/tree/main/modelos/"
+	case "SIFAPSC":
+		caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
+		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
+	case "CLUSTER":
+		caminho_dados = "..."
+	case "CASA":
+		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
+		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
+	case _:
+		print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
