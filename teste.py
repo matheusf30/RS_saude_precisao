@@ -272,7 +272,7 @@ for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
 #dataset.drop(columns = ["tmin", "temp", "tmax",
 #						"urmin", "umidade", "urmax",
 #						"prec", "pressao", "ventodir",  "ventovel"], inplace = True)
-dataset.drop(columns = ["s_obito"], inplace = True)
+dataset.drop(columns = ["s_obito", "s_temp", "s_tmin", "s_tmax", "s_amplitude_t"], inplace = True)
 dataset.dropna(inplace = True)
 data_dataset = dataset.copy()
 dataset.set_index("data", inplace = True)
@@ -538,10 +538,10 @@ def grafico_previsao(previsao, teste, string_modelo):
 	for velho, novo in troca.items():
 		_cidade = _cidade.replace(velho, novo)
 	if _SALVAR == "True":
-		plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
-		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
+		plt.savefig(f'{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
+		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 	if _VISUALIZAR == "True":	
-		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
+		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 		plt.show()
 
 def metricas(string_modelo, modeloNN = None):
@@ -579,14 +579,14 @@ def metricas_importancias(modeloRF, explicativas):
 	std = np.std([tree.feature_importances_ for tree in modeloRF.estimators_], axis=0)
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_impureza = importancia_impureza.sort_values(ascending = False)
-	importancia_impureza.plot.bar(yerr = std, ax = ax)
+	importancia_impureza[:10].plot.bar(yerr = std[:10], ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Impureza Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
-	for i, v in enumerate(importancia_impureza.values):
-		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
+	for i, v in enumerate(importancia_impureza[:10].values):
+		ax.text(i + 0.01, v, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
 	if _SALVAR == "True":
 		plt.savefig(f'{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
@@ -599,15 +599,16 @@ def metricas_importancias(modeloRF, explicativas):
 	resultado_permuta = permutation_importance(modeloRF, teste_x, teste_y, n_repeats = n_permuta, random_state = SEED, n_jobs = 2)
 	importancia_permuta = pd.Series(resultado_permuta.importances_mean, index = explicativas)
 	importancia_permuta = importancia_permuta.sort_values(ascending = False)
+	std = resultado_permuta.importances_std
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
-	importancia_permuta.plot.bar(yerr = resultado_permuta.importances_std, ax = ax)
+	importancia_permuta[:10].plot.bar(yerr = std[:10], ax = ax)
 	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Acurácia Média")
 	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
-	for i, v in enumerate(importancia_permuta.values):
-		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
+	for i, v in enumerate(importancia_permuta[:10].values):
+		ax.text(i + 0.01, v, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
 	if _SALVAR == "True":
 		plt.savefig(f'{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
