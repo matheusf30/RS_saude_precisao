@@ -182,33 +182,64 @@ print(biometeoro, biometeoro.info())
 #sys.exit()
 
 # Visualização Prévia
-
-biometeoro["s_obito"] = biometeoro["obito"].copy()
-biometeoro["s_obito"] = gaussian_filter1d(biometeoro["s_obito"],
-                                       sigma = 1)
-
-plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
-ax1 = plt.gca()
-sns.lineplot(x = biometeoro["data"], y = biometeoro["temp"], zorder = 1,
-            color = "gold", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Média", ax = ax1)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["tmin"], zorder = 1,
-            color = "blue", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Mínima", ax = ax1)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"], zorder = 1,
-            color = "red", alpha = 0.7, linewidth = 1,
-			label = "Temperatura Máxima", ax = ax1)
-sns.lineplot(x = biometeoro["data"], y = biometeoro["amplitude_t"], zorder = 2,
-            color = "green", alpha = 0.7, linewidth = 1,
-			label = "Amplitude Térmica", ax = ax1)
-ax2 = ax1.twinx()
-sns.lineplot(x = biometeoro["data"], y = biometeoro["s_obito"], zorder = 2,
-             color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
+_sigma = 1
+if _sigma > 0:
+	biometeoro["s_obito"] = biometeoro["obito"].copy()
+	biometeoro["s_obito"] = gaussian_filter1d(biometeoro["s_obito"],
+		                                   sigma = _sigma)
+	biometeoro["s_temp"] = biometeoro["temp"].copy()
+	biometeoro["s_temp"] = gaussian_filter1d(biometeoro["s_temp"],
+		                                   sigma = _sigma*5)
+	biometeoro["s_tmin"] = biometeoro["tmin"].copy()
+	biometeoro["s_tmin"] = gaussian_filter1d(biometeoro["s_tmin"],
+		                                   sigma = _sigma*5)
+	biometeoro["s_tmax"] = biometeoro["tmax"].copy()
+	biometeoro["s_tmax"] = gaussian_filter1d(biometeoro["s_tmax"],
+		                                   sigma = _sigma*5)
+	biometeoro["s_amplitude_t"] = biometeoro["amplitude_t"].copy()
+	biometeoro["s_amplitude_t"] = gaussian_filter1d(biometeoro["s_amplitude_t"],
+		                                   sigma = _sigma*5)
+	plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
+	ax1 = plt.gca()
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_temp"], zorder = 1,
+		        color = "gold", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Média", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_tmin"], zorder = 1,
+		        color = "blue", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Mínima", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_tmax"], zorder = 1,
+		        color = "red", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Máxima", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_amplitude_t"], zorder = 2,
+		        color = "green", alpha = 0.7, linewidth = 1,
+				label = "Amplitude Térmica", ax = ax1)
+	ax2 = ax1.twinx()
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_obito"], zorder = 2,
+		         color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
+	ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS ($\\sigma$ = {_sigma*5}) E ÓBITOS CARDIOVASCULARES ($\\sigma$ = {_sigma}).\nSÉRIE HISTÓRICA, {cidade}.")
+else:
+	plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
+	ax1 = plt.gca()
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_temp"], zorder = 1,
+		        color = "gold", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Média", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_tmin"], zorder = 1,
+		        color = "blue", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Mínima", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_tmax"], zorder = 1,
+		        color = "red", alpha = 0.7, linewidth = 1,
+				label = "Temperatura Máxima", ax = ax1)
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_amplitude_t"], zorder = 2,
+		        color = "green", alpha = 0.7, linewidth = 1,
+				label = "Amplitude Térmica", ax = ax1)
+	ax2 = ax1.twinx()
+	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_obito"], zorder = 2,
+		         color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
+	ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS E ÓBITOS CARDIOVASCULARES.\nSÉRIE HISTÓRICA, {cidade}.")
 ax1.legend(loc = "upper left")
 ax1.grid(True)
 ax2.legend(loc = "upper right")
 ax2.grid(True)
-ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS E ÓBITOS CARDIOVASCULARES.\nSÉRIE HISTÓRICA, {cidade}.")
 ax1.set_facecolor("honeydew")
 ax2.set_facecolor("honeydew")
 #sns.lineplot(x = biometeoro["data"], y = biometeoro["prec"],
