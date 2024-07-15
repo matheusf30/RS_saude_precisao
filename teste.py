@@ -216,7 +216,7 @@ if _sigma > 0:
 	ax2 = ax1.twinx()
 	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_obito"], zorder = 2,
 		         color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
-	ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS ($\\sigma$ = {_sigma*5}) E ÓBITOS CARDIOVASCULARES ($\\sigma$ = {_sigma}).\nSÉRIE HISTÓRICA, {cidade}.")
+	ax2.set_title(f"SUAVIZAÇÃO GAUSSIANA ($\\sigma$) DA SÉRIE HISTÓRICA, {cidade}, RIO GRANDE DO SUL.\nANÁLISE EXPLORATÓRIA DE TEMPERATURAS ($\\sigma$ = {_sigma*5}) E ÓBITOS CARDIOVASCULARES ($\\sigma$ = {_sigma}).")
 else:
 	plt.figure(figsize = (18, 6), layout = "constrained", frameon = False)
 	ax1 = plt.gca()
@@ -235,7 +235,7 @@ else:
 	ax2 = ax1.twinx()
 	sns.lineplot(x = biometeoro["data"], y = biometeoro["s_obito"], zorder = 2,
 		         color = "black", alpha = 0.8, linewidth = 1, label = "Óbitos", ax = ax2)
-	ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS E ÓBITOS CARDIOVASCULARES.\nSÉRIE HISTÓRICA, {cidade}.")
+	ax2.set_title(f"ANÁLISE EXPLORATÓRIA DE TEMPERATURAS E ÓBITOS CARDIOVASCULARES.\nSÉRIE HISTÓRICA, {cidade}, RIO GRANDE DO SUL.")
 ax1.legend(loc = "upper left")
 ax1.grid(True)
 ax2.legend(loc = "upper right")
@@ -246,7 +246,9 @@ ax2.set_facecolor("honeydew")
 #             color = "darkblue", alpha = 0.7, linewidth = 3, label = "Precipitação")
 if _SALVAR == "True":
 	plt.savefig(f'{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf', format = "pdf", dpi = 1200)
+	print(f"{ansi['green']}SALVANDO:\n\n{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf{ansi['reset']}")
 if _VISUALIZAR == "True":
+	print(f"{ansi['green']}VISUALIZANDO:\n\n{caminho_resultados}analise_exploratoria_serie_historica_{_cidade}_.pdf{ansi['reset']}")
 	plt.show()
 
 
@@ -270,6 +272,7 @@ for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
 #dataset.drop(columns = ["tmin", "temp", "tmax",
 #						"urmin", "umidade", "urmax",
 #						"prec", "pressao", "ventodir",  "ventovel"], inplace = True)
+dataset.drop(columns = ["s_obito"], inplace = True)
 dataset.dropna(inplace = True)
 data_dataset = dataset.copy()
 dataset.set_index("data", inplace = True)
@@ -535,9 +538,10 @@ def grafico_previsao(previsao, teste, string_modelo):
 	for velho, novo in troca.items():
 		_cidade = _cidade.replace(velho, novo)
 	if _SALVAR == "True":
-		print(f"{ansi['green']}\n\nSALVANDO COM SUCESSO...\n\n{ansi['reset']}")
-		plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
+		plt.savefig(f'{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
+		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 	if _VISUALIZAR == "True":	
+		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}verificatualizacao_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 		plt.show()
 
 def metricas(string_modelo, modeloNN = None):
@@ -585,9 +589,10 @@ def metricas_importancias(modeloRF, explicativas):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
 	if _SALVAR == "True":
-		print(f"{ansi['green']}\n\nSALVANDO COM SUCESSO...\n\n{ansi['reset']}")
-		plt.savefig(f'{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
+		plt.savefig(f'{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
+		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 		plt.show()
 	#2 Permutações
 	n_permuta = 10
@@ -605,9 +610,10 @@ def metricas_importancias(modeloRF, explicativas):
 		ax.text(i, v + 0.01, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
 	if _SALVAR == "True":
-		print(f"{ansi['green']}\n\nSALVANDO COM SUCESSO...\n\n{ansi['reset']}")
-	plt.savefig(f'{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}_{limite}-{fim}.pdf', format = "pdf", dpi = 1200)
+		plt.savefig(f'{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
+		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf{ansi['reset']}")
 		plt.show()
 	print(f"\nVARIÁVEIS IMPORTANTES:\n{importancia_impureza}\n")
 	print(f"\nVARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO:\n{importancia_permuta}")
