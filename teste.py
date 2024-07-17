@@ -182,7 +182,7 @@ print(biometeoro, biometeoro.info())
 #sys.exit()
 
 # Visualização Prévia
-_sigma = 1
+_sigma = int(input(f"\n{ansi['cyan']}>>> Caso a suavização não seja necessária, digite zero (0).\n>>> Caso seja, selecione um número inteiro maior que zero: {ansi['reset']}"))
 if _sigma > 0:
 	biometeoro["s_obito"] = biometeoro["obito"].copy()
 	biometeoro["s_obito"] = gaussian_filter1d(biometeoro["s_obito"],
