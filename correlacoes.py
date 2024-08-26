@@ -161,15 +161,15 @@ print(media_dia.index)
 componente_sazonal = timeindex.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
 sem_sazonal = pd.DataFrame(index = timeindex.index)
 print(componente_sazonal)
-for col in timeindex.columns:
-	if col in componente_sazonal.columns:
-		mean_col = f'{col}_media'
-		if mean_col in componente_sazonal.columns:
-			sem_sazonal[col] = timeindex[col] - componente_sazonal[mean_col]
+for coluna in timeindex.columns:
+	if coluna in componente_sazonal.columns:
+		media_coluna = f"{coluna}_media"
+		if media_coluna in componente_sazonal.columns:
+			sem_sazonal[coluna] = timeindex[coluna] - componente_sazonal[mean_coluna]
 		else:
-			print(f"Column {mean_col} not found in merged_df")
+			print(f"{ansi['red']}Coluna {media_coluna} não encontrada no componente sazonal!{ansi['reset']}")
 	else:
-		print(f"Column {col} not found in timeindex")
+		print(f"{ansi['red']}Coluna {coluna} não encontrada no timeindex!{ansi['reset']}")
 print(sem_sazonal)
 sem_sazonal[["obito","tmin","tmax"]].plot()
 plt.show()
