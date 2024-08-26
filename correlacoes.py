@@ -5,7 +5,9 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import statsmodels as sm
-import esmtools.stats as esm
+from scipy.stats import linregress
+#import esmtools.stats as esm
+#import xarray as xr
 ### Suporte
 import sys
 import os
@@ -132,8 +134,6 @@ biometeoro = biometeoro[["data", "obito",
 						"tmin", "temp", "tmax", "amplitude_t",
 						"urmin", "umidade", "urmax",
 						"prec", "pressao", "ventodir", "ventovel"]]
-
-
 print(80*"=")
 print(bio, bio.info())
 print(80*"=")
@@ -177,10 +177,9 @@ print(sem_sazonal)
 #plt.show()
 
 # Tratando Tendência
-tendencia = timeindex.groupby("dia")
-print(tendencia)
+slope, intercept, r_value, p_value, std_err = linregress(sem_sazonal.index, sem_sazonal)
+print(slope, intercept, r_value, p_value, std_err)
 sys.exit()
-
 
 
 
