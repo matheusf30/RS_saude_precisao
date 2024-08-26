@@ -177,15 +177,48 @@ print(sem_sazonal)
 #plt.show()
 
 # Tratando Tendência
+print("="*80, "\nTratando Tendência\n")
+print("\nsem_sazonal.shape\n", sem_sazonal.shape)
+print("\nlen(sem_sazonal.index)\n", len(sem_sazonal.index))
+print("\nlen(sem_sazonal.columns)\n", len(sem_sazonal.columns))
+print("\nsem_sazonal.index\n", sem_sazonal.index)
+print("\nsem_sazonal.columns\n", sem_sazonal.columns)
 array = xr.DataArray(sem_sazonal.values,
-					dims = ["time"],
-					coords = {"time": sem_sazonal.index,
+					dims = ["data", "variable"],
+					coords = {"data": sem_sazonal.index,
 							"variable": sem_sazonal.columns})
-print(array)
-tendencia = esm.linregress(x = array.time, y = array, dim = "time")
+print("\nArray\n", array)
+print("\narray.variable.values\n", array.variable.values)
+sys.exit()
+resultados = {"slope": {},
+			"intercept": {},
+			"r_value": {},
+			"p_value": {},
+			"std_err": {} }
+for var in array.variable.values:
+	try:
+		y = array.sel(variable=var).values
+		x = np.arange(len(array.data))
+		slope, intercept, r_value, p_value, std_err = linregress(x, y)
+		resultados["slope"][var] = slope
+		resultados["intercept"][var] = intercept
+		resultados["r_value"][var] = r_value
+		resultados["p_value"][var] = p_value
+		resultados["std_err"][var] = std_err
+	except KeyError:
+		print(f"Variable '{var}' not found in the DataArray.")
+	except Exception as e:
+		print(f"An error occurred for variable '{var}': {e}")
+df_resultados = pd.DataFrame(resultados)
+print("\nResultados\n", df_resultados)
+
+
+sys.exit()
+#tendencia = esm.linregress(x = array, y = array, dim = "data")
 
 
 print(tendencia)
+print("="*80)
 sys.exit()
 
 
