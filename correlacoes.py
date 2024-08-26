@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import statsmodels as sm
+import esmtools.stats as esm
 ### Suporte
 import sys
 import os
@@ -165,14 +166,19 @@ for coluna in timeindex.columns:
 	if coluna in componente_sazonal.columns:
 		media_coluna = f"{coluna}_media"
 		if media_coluna in componente_sazonal.columns:
-			sem_sazonal[coluna] = timeindex[coluna] - componente_sazonal[mean_coluna]
+			sem_sazonal[coluna] = timeindex[coluna] - componente_sazonal[media_coluna]
 		else:
 			print(f"{ansi['red']}Coluna {media_coluna} não encontrada no componente sazonal!{ansi['reset']}")
 	else:
 		print(f"{ansi['red']}Coluna {coluna} não encontrada no timeindex!{ansi['reset']}")
+sem_sazonal.drop(columns = "dia", inplace = True)
 print(sem_sazonal)
-sem_sazonal[["obito","tmin","tmax"]].plot()
-plt.show()
+#sem_sazonal[["obito","tmin","tmax"]].plot()
+#plt.show()
+
+# Tratando Tendência
+tendencia = timeindex.groupby("dia")
+print(tendencia)
 sys.exit()
 
 
