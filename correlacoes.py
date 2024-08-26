@@ -144,13 +144,65 @@ print(meteoro, meteoro.info())
 print(80*"=")
 print(biometeoro, biometeoro.info())
 
-media = biometeoro.groupby("time.dt.day")[["data", "obito",
-						"tmin", "temp", "tmax", "amplitude_t",
-						"urmin", "umidade", "urmax",
-						"prec", "pressao", "ventodir", "ventovel"]].mean().round(2)
-print(media)
-
+# Tratando Sazonalidade
+timeindex = biometeoro.copy()
+timeindex = timeindex.set_index("data")
+timeindex["dia"] = timeindex.index.dayofyear
+#timeindex["mes_dia"] = timeindex.index.to_period('M').astype(str) + '-' + timeindex.index.day.astype(str)
+print(timeindex, timeindex.info())
 #sys.exit()
+print("="*80)
+media_dia = timeindex.groupby("dia").mean().round(2)
+media_dia.reset_index(inplace = True)
+print(media_dia)
+print(media_dia.index)
+#media_dia[["obito","tmin","tmax"]].plot()
+#plt.show()
+componente_sazonal = timeindex.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
+sem_sazonal = pd.DataFrame(index = timeindex.index)
+print(componente_sazonal)
+for col in timeindex.columns:
+	if col in componente_sazonal.columns:
+		mean_col = f'{col}_media'
+		if mean_col in componente_sazonal.columns:
+			sem_sazonal[col] = timeindex[col] - componente_sazonal[mean_col]
+		else:
+			print(f"Column {mean_col} not found in merged_df")
+	else:
+		print(f"Column {col} not found in timeindex")
+print(sem_sazonal)
+sem_sazonal[["obito","tmin","tmax"]].plot()
+plt.show()
+sys.exit()
+
+
+
+
+
+
+
+print("="*80)
+componente_sazonal = pd.DataFrame(index = timeindex.index)
+# Extract the day of the year for each date
+componente_sazonal['dia'] = timeindex.index.dayofyear
+# Merge with media_dia to get daily mean values
+componente_sazonal = componente_sazonal.join(media_dia, on = 'dia', how = 'left', rsuffix = '_mean')
+# Calculate the seasonality by subtracting daily means from the original data
+print(componente_sazonal, componente_sazonal.info())
+sys.exit()
+for col in timeindex.columns:
+	if col in componente_sazonal.columns:
+		componente_sazonal[col] = timeindex[col] - media_dia[col]
+print(componente_sazonal)
+
+
+
+
+
+
+
+
+
 
 
 #################################################################################
