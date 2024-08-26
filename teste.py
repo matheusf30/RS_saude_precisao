@@ -31,10 +31,10 @@ ansi = {"bold" : "\033[1m", "red" : "\033[91m",
 
 ### CONDIÇÕES PARA VARIAR ##################################
                                                        #####
-_LOCAL = "SIFAPSC" # OPÇÕES>>>GH|CASA|CLUSTER|SIFAPSC  #####
+_LOCAL = "SIFAPSC" # OPÇÕES >>> GH|CASA|CLUSTER|SIFAPSC#####
                                                        #####
 ##################### Valores Booleanos #######        ##### # sys.argv[0] is the script name itself and can be ignored!
-_AUTOMATIZAR = sys.argv[1]   # True|False #####        #####
+_AUTOMATIZAR = sys.argv[1]   # True|False  ####        #####
                                            ####        #####
 _VISUALIZAR = sys.argv[2]    # True|False  ####        #####
                                            ####        #####
