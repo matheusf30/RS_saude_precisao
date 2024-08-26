@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import statsmodels as sm
-from scipy.stats import linregress
-#import esmtools.stats as esm
-#import xarray as xr
+#from scipy.stats import linregress
+import esmtools.stats as esm
+import xarray as xr
 ### Suporte
 import sys
 import os
@@ -177,8 +177,15 @@ print(sem_sazonal)
 #plt.show()
 
 # Tratando Tendência
-slope, intercept, r_value, p_value, std_err = linregress(sem_sazonal.index, sem_sazonal)
-print(slope, intercept, r_value, p_value, std_err)
+array = xr.DataArray(sem_sazonal.values,
+					dims = ["time"],
+					coords = {"time": sem_sazonal.index,
+							"variable": sem_sazonal.columns})
+print(array)
+tendencia = esm.linregress(x = array.time, y = array, dim = "time")
+
+
+print(tendencia)
 sys.exit()
 
 
