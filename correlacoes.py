@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import statsmodels as sm
+import pymannkendall as mk
 #from scipy.stats import linregress
 import esmtools.stats as esm
 import xarray as xr
@@ -175,6 +176,9 @@ sem_sazonal.drop(columns = "dia", inplace = True)
 print(sem_sazonal)
 #sem_sazonal[["obito","tmin","tmax"]].plot()
 #plt.show()
+
+# Verificando Tendência
+sys.exit()
 
 # Tratando Tendência
 print("="*80, "\nTratando Tendência\n")
