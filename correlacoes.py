@@ -275,11 +275,13 @@ colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
 			'pressao', 'ventodir', 'ventovel']
 _retroceder = 3
 
+anomalia_estacionaria_set = anomalia_estacionaria.copy()
 for _r in range(1, _retroceder +1):
 	for c_r in colunas_r:
-		anomalia_estacionaria[f"{c_r}_r{_r}"] = anomalia_estacionaria[f"{c_r}"].shift(-_r)
-print(anomalia_estacionaria)
-correlacao_dataset = anomalia_estacionaria.corr()
+		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
+anomalia_estacionaria_set.dropna(inplace = True)
+print("\nanomalia_estacionaria_set\n", anomalia_estacionaria_set)
+correlacao_dataset = anomalia_estacionaria_set.corr()
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
@@ -292,6 +294,8 @@ biometeoro_set = biometeoro.copy()
 for _r in range(1, _retroceder +1):
 	for c_r in colunas_r:
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
+biometeoro_set.dropna(inplace = True)
+print("\nbiometeoro_set\n", biometeoro_set)
 correlacao_dataset = biometeoro_set.corr()
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
