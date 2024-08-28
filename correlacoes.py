@@ -174,10 +174,39 @@ for coluna in timeindex.columns:
 		print(f"{ansi['red']}Coluna {coluna} não encontrada no timeindex!{ansi['reset']}")
 sem_sazonal.drop(columns = "dia", inplace = True)
 print(sem_sazonal)
+print(sem_sazonal.columns)
 #sem_sazonal[["obito","tmin","tmax"]].plot()
 #plt.show()
 
 # Verificando Tendência
+colunas = ['obito', 'tmin', 'temp', 'tmax', 'amplitude_t',
+			'urmin', 'umidade', 'urmax', 'prec',
+			'pressao', 'ventodir', 'ventovel']
+for c in colunas:
+	tendencia = mk.original_test(sem_sazonal[c])
+	if tendencia.trend == "decreasing":
+		print(f"\n{ansi['red']}{c}\n{tendencia.trend}{ansi['reset']}\n")
+	if tendencia.trend == "no trend":
+		print(f"\n{ansi['cyan']}{c}\n{tendencia.trend}{ansi['reset']}\n")
+	elif tendencia.trend == "increasing":
+		print(f"\n{ansi['green']}{c}\n{tendencia.trend}{ansi['reset']}\n")
+#	else:
+#		print(f"\n{ansi['magenta']}NÃO EXECUTANDO\n{c}{ansi['reset']}\n")
+
+# Tratando Tendência
+# anomalia_estacionaria = dados - ( a + b * x )
+anomalia_estacionaria = pd.DataFrame()
+for c in colunas:
+	print(c)
+	print(sem_sazonal[c])
+	tendencia = mk.original_test(sem_sazonal[c])
+	print(tendencia)
+	sem_tendencia = sem_sazonal[c] -(tendencia.slope + tendencia.intercept)# * len(sem_sazonal[c]))
+	anomalia_estacionaria[c] = sem_tendencia
+print(f"{ansi['green']}\nsem_sazonal\n{ansi['reset']}", sem_sazonal)
+print(f"{ansi['green']}\nanomalia_estacionaria\n{ansi['reset']}", anomalia_estacionaria)
+
+"""
 sys.exit()
 
 # Tratando Tendência
@@ -216,19 +245,12 @@ for var in array.variable.values:
 df_resultados = pd.DataFrame(resultados)
 print("\nResultados\n", df_resultados)
 
-
 sys.exit()
 #tendencia = esm.linregress(x = array, y = array, dim = "data")
-
 
 print(tendencia)
 print("="*80)
 sys.exit()
-
-
-
-
-
 
 print("="*80)
 componente_sazonal = pd.DataFrame(index = timeindex.index)
@@ -243,9 +265,43 @@ for col in timeindex.columns:
 	if col in componente_sazonal.columns:
 		componente_sazonal[col] = timeindex[col] - media_dia[col]
 print(componente_sazonal)
+"""
+#################################################################################
+### Correlações
+#################################################################################
 
+colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
+			'urmin', 'umidade', 'urmax', 'prec',
+			'pressao', 'ventodir', 'ventovel']
+_retroceder = 3
 
+for _r in range(1, _retroceder +1):
+	for c_r in colunas_r:
+		anomalia_estacionaria[f"{c_r}_r{_r}"] = anomalia_estacionaria[f"{c_r}"].shift(-_r)
+print(anomalia_estacionaria)
+correlacao_dataset = anomalia_estacionaria.corr()
+fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO", weight = "bold", size = "medium")
+ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+plt.show()
 
+biometeoro_set = biometeoro.copy()
+for _r in range(1, _retroceder +1):
+	for c_r in colunas_r:
+		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
+correlacao_dataset = biometeoro_set.corr()
+fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO", weight = "bold", size = "medium")
+ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+plt.show()
+
+sys.exit()
 
 
 
