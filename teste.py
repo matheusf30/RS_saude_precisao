@@ -402,7 +402,7 @@ def monta_dataset(cidade):
 	dataset.columns.name = f"{cidade}"
 	return dataset
 
-def treino_teste(dataset, cidade):
+def treino_teste(dataset, cidade, tamanho_teste = 0.2):
 	SEED = np.random.seed(0)
 	x = dataset.drop(columns = "obito")
 	y = dataset["obito"]
@@ -431,7 +431,7 @@ def treino_teste(dataset, cidade):
 	x_array = x_array.reshape(x_array.shape[0], -1)
 	treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
 		                                                random_state = SEED,
-		                                                test_size = 0.2)
+		                                                test_size = tamanho_teste)
 	explicativas = x.columns.tolist()
 	treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 	treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
@@ -678,7 +678,7 @@ joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
 y_previstoRF = modeloRF.predict(teste_x)
 EQM_RF = mean_squared_error(teste_y, y_previstoRF)
 RQ_EQM_RF = np.sqrt(EQM_RF)
-R_2 = r2_score(teste_y, y_previstoRF).round(2) 
+R_2 = round(r2_score(teste_y, y_previstoRF), 2)#.round(2) 
 
 ### Testando e Validando Modelo
 testesRF = modeloRF.predict(teste_x)
