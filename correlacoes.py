@@ -370,12 +370,12 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 6 dias retroagidos
 biometeoro_set = biometeoro.copy()
@@ -394,12 +394,12 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 9 dias retroagidos
 biometeoro_set = biometeoro.copy()
@@ -418,12 +418,12 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 
 sys.exit()
