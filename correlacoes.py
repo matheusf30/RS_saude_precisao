@@ -170,9 +170,6 @@ plt.title("DISTRIBUIÇÃO DE TEMPERATURA MÍNIMA, TEMPERATURA MÁXIMA E ÓBITOS 
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 #media_dia[["obito","tmin","tmax"]].plot()
-if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Média Anual. {ansi['reset']}")
-	plt.show()
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
@@ -181,6 +178,9 @@ if _SALVAR == "True":
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
 	NOME DO ARQUIVO: {caminho_correlacao}distibuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
+if _VISUALIZAR == "True":
+	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Média Anual. {ansi['reset']}")
+	plt.show()
 
 
 componente_sazonal = timeindex.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
@@ -209,9 +209,6 @@ sns.lineplot(x = sem_sazonal.index, y = sem_sazonal["obito"],
 plt.title("DISTRIBUIÇÃO DE TEMPERATURA MÍNIMA, TEMPERATURA MÁXIMA E ÓBITOS CARDIOVASCULARES.\nSEM SAZONALIDADE AO LONGO DOS ANOS PARA O MUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
-if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Série histórica.{ansi['reset']}")
-	plt.show()
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
@@ -220,7 +217,9 @@ if _SALVAR == "True":
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
 	NOME DO ARQUIVO: {caminho_correlacao}distibuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
-
+if _VISUALIZAR == "True":
+	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Série histórica.{ansi['reset']}")
+	plt.show()
 
 # Verificando Tendência
 colunas = ['obito', 'tmin', 'temp', 'tmax', 'amplitude_t',
