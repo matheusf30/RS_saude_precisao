@@ -159,8 +159,28 @@ media_dia = timeindex.groupby("dia").mean().round(2)
 media_dia.reset_index(inplace = True)
 print(media_dia)
 print(media_dia.index)
+plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
+sns.lineplot(x = media_dia["dia"], y = media_dia["obito"],
+				color = "black", linewidth = 1, label = "Óbito")
+sns.lineplot(x = media_dia["dia"], y = media_dia["tmin"],
+				color = "darkblue", linewidth = 1, label = "Temperatura Mínima")
+sns.lineplot(x = media_dia["dia"], y = media_dia["tmax"],
+				color = "red", linewidth = 1, label = "Temperatura Máxima") #alpha = 0.7, linewidth = 3
+plt.title("DISTRIBUIÇÃO DE TEMPERATURA MÍNIMA, TEMPERATURA MÁXIMA E ÓBITOS CARDIOVASCULARES.\nMÉDIAS ANUAIS PARA O MUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
+plt.xlabel("Série Histórica (Observação Diária)")
+plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 #media_dia[["obito","tmin","tmax"]].plot()
-#plt.show()
+#if _VISUALIZAR == "True":
+print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Média Anual. {ansi['reset']}")
+plt.show()
+caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
+os.makedirs(caminho_correlacao, exist_ok = True)
+plt.savefig(f'{caminho_correlacao}distibuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+NOME DO ARQUIVO: {caminho_correlacao}distibuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
+
+
 componente_sazonal = timeindex.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
 sem_sazonal = pd.DataFrame(index = timeindex.index)
 print(componente_sazonal)
@@ -176,8 +196,8 @@ for coluna in timeindex.columns:
 sem_sazonal.drop(columns = "dia", inplace = True)
 print(sem_sazonal)
 print(sem_sazonal.columns)
-#sem_sazonal[["obito","tmin","tmax"]].plot()
-#plt.show()
+sem_sazonal[["tmin","tmax", "obito"]].plot()
+plt.show()
 
 # Verificando Tendência
 colunas = ['obito', 'tmin', 'temp', 'tmax', 'amplitude_t',
