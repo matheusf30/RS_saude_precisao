@@ -26,7 +26,7 @@ _SALVAR = sys.argv[3]        # True|False  ####        #####
 ###############################################        #####
                                                        #####
 ############################################################
-
+"""
 _LIMIAR_RETRO = True
 _CLIMA = True
 _ENTOMOEPIDEMIO = True
@@ -40,6 +40,7 @@ _CIDADE = "Florianópolis" #"Florianópolis"#"Itajaí"#"Joinville"#"Chapecó"
 _METODO = "spearman" # "pearson" # "spearman" # "kendall"
 
 _CIDADE = _CIDADE.upper()
+"""
 ##### Padrão ANSI ##################################
 ansi = {"bold" : "\033[1m", "red" : "\033[91m",
         "green" : "\033[92m", "yellow" : "\033[33m",
@@ -285,10 +286,20 @@ correlacao_dataset = anomalia_estacionaria_set.corr()
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON\nANOMALIAS ESTACIONÁRIAS NO MUNICÍPIO DE PORTO ALEGRE\nRETROAGINDO ATÉ {_retroceder} DIAS", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
-plt.show()
+if _SALVAR == "True":
+	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+	os.makedirs(caminho_correlacao, exist_ok = True)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder}d.pdf{ansi['reset']}\n""")
+if _VISUALIZAR == "True":
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder} dias retroagidos. {ansi['reset']}")
+	plt.show()
+
 
 biometeoro_set = biometeoro.copy()
 for _r in range(1, _retroceder +1):
@@ -306,6 +317,9 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 plt.show()
 
 sys.exit()
+
+
+
 
 
 
