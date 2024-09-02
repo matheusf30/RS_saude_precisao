@@ -290,12 +290,12 @@ y = dataset["obito"]
 x_array = x.to_numpy().astype(int)
 y_array = y.to_numpy().astype(int)
 x_array = x_array.reshape(x_array.shape[0], -1)
-"""
+
 treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
                                                         random_state = SEED,
                                                         test_size = 0.2)
 """
-z = 2155
+z = 6850
 x_ate_limite = x.iloc[:-z]
 y_ate_limite = y.iloc[:-z]
 xlimite = x.iloc[-z:]
@@ -304,7 +304,7 @@ treino_x = x_ate_limite.copy()
 teste_x = xlimite.copy()
 treino_y = y_ate_limite.copy()
 teste_y = ylimite.copy()
-
+"""
 sobre = RandomOverSampler(sampling_strategy = "minority")
 sub = RandomUnderSampler(sampling_strategy = "majority")
 treino_x, treino_y = sobre.fit_resample(treino_x, treino_y)
