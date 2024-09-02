@@ -283,17 +283,19 @@ print(dataset)
 #sys.exit()
 
 ### Dividindo Dataset em Treino e Teste
+
 SEED = np.random.seed(0)
 x = dataset.drop(columns = "obito")
 y = dataset["obito"]
 x_array = x.to_numpy().astype(int)
 y_array = y.to_numpy().astype(int)
 x_array = x_array.reshape(x_array.shape[0], -1)
-
+"""
 treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
                                                         random_state = SEED,
                                                         test_size = 0.2)
 """
+z = 2155
 x_ate_limite = x.iloc[:-z]
 y_ate_limite = y.iloc[:-z]
 xlimite = x.iloc[-z:]
@@ -302,7 +304,7 @@ treino_x = x_ate_limite.copy()
 teste_x = xlimite.copy()
 treino_y = y_ate_limite.copy()
 teste_y = ylimite.copy()
-"""
+
 sobre = RandomOverSampler(sampling_strategy = "minority")
 sub = RandomUnderSampler(sampling_strategy = "majority")
 treino_x, treino_y = sobre.fit_resample(treino_x, treino_y)
@@ -369,7 +371,11 @@ print("~"*80)
 #print(dataset.dtypes)
 #print("~"*80)
 print(dataset)
-#print("="*80)
+print("="*80)
+print("\ntreino_x\n", treino_x)
+print("\nteste_x\n", teste_x)
+print("\ntreino_y\n", treino_y)
+print("\nteste_y\n" , teste_y)
 #print(f"X no formato numpy.ndarray: {x_array}.")
 print("="*80)
 print(f"Treinando com {len(treino_x)} elementos e testando com {len(teste_x)} elementos.") # Tamanho é igual para dados normalizados
