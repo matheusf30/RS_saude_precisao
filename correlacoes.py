@@ -312,7 +312,7 @@ print(componente_sazonal)
 #################################################################################
 ### Correlações
 #################################################################################
-
+_METODO = "spearman"#, "person"
 colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
 			'urmin', 'umidade', 'urmax', 'prec',
 			'pressao', 'ventodir', 'ventovel']
@@ -326,22 +326,22 @@ for _r in range(1, _retroceder[0] +1):
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
 anomalia_estacionaria_set.dropna(inplace = True)
 print("\nanomalia_estacionaria_set\n", anomalia_estacionaria_set)
-correlacao_dataset = anomalia_estacionaria_set.corr()
+correlacao_dataset = anomalia_estacionaria_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_anomaliaestacionaria_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_anomaestacio_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de anomalias estacionárias do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 6 dias retroagidos
 anomalia_estacionaria_set = anomalia_estacionaria.copy()
@@ -350,22 +350,22 @@ for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
 anomalia_estacionaria_set.dropna(inplace = True)
 print("\nanomalia_estacionaria_set\n", anomalia_estacionaria_set)
-correlacao_dataset = anomalia_estacionaria_set.corr()
+correlacao_dataset = anomalia_estacionaria_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_anomaliaestacionaria_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_anomaestacio_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO} de anomalias estacionárias do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 9 dias retroagidos
 anomalia_estacionaria_set = anomalia_estacionaria.copy()
@@ -374,22 +374,22 @@ for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
 anomalia_estacionaria_set.dropna(inplace = True)
 print("\nanomalia_estacionaria_set\n", anomalia_estacionaria_set)
-correlacao_dataset = anomalia_estacionaria_set.corr()
+correlacao_dataset = anomalia_estacionaria_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_anomaliaestacionaria_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_anomaliaestacionaria_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_anomaestacio_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_anomaestacio_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de anomalias estacionárias do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de anomalias estacionárias do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 
 
@@ -402,22 +402,22 @@ for _r in range(1, _retroceder[0] +1):
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
 biometeoro_set.dropna(inplace = True)
 print("\nbiometeoro_set\n", biometeoro_set)
-correlacao_dataset = biometeoro_set.corr()
+correlacao_dataset = biometeoro_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 6 dias retroagidos
 biometeoro_set = biometeoro.copy()
@@ -426,22 +426,22 @@ for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
 biometeoro_set.dropna(inplace = True)
 print("\nbiometeoro_set\n", biometeoro_set)
-correlacao_dataset = biometeoro_set.corr()
+correlacao_dataset = biometeoro_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 9 dias retroagidos
 biometeoro_set = biometeoro.copy()
@@ -450,22 +450,22 @@ for _r in range(_retroceder[1] + 1, _retroceder[2] +1):
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
 biometeoro_set.dropna(inplace = True)
 print("\nbiometeoro_set\n", biometeoro_set)
-correlacao_dataset = biometeoro_set.corr()
+correlacao_dataset = biometeoro_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE PEARSON DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
+fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}matriz_correlacao_pearson_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_Pearson_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}matriz_correlacao_{_METODO}_dadosbrutos_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
-	print(f"{ansi['green']}Exibindo a Matriz de Correlação de Pearson de dados brutos do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
+	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 
 sys.exit()
