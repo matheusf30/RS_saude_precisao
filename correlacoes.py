@@ -314,7 +314,7 @@ print(componente_sazonal)
 #################################################################################
 ### Correlações
 #################################################################################
-_METODO = "pearson"#, "pearson", "spearman"
+_METODO = "spearman"#, "pearson", "spearman"
 colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
 			'urmin', 'umidade', 'urmax', 'prec',
 			'pressao', 'ventodir', 'ventovel']
@@ -472,7 +472,8 @@ if _VISUALIZAR == "True":
 
 # Dados Brutos
 # Até 3 dias retroagidos
-biometeoro_set = biometeoro.copy()
+biometeoro2 = biometeoro.set_index("data")
+biometeoro_set = biometeoro2.copy()
 for _r in range(1, _retroceder[0] +1):
 	for c_r in colunas_r:
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
@@ -496,7 +497,7 @@ if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 6 dias retroagidos
-biometeoro_set = biometeoro.copy()
+biometeoro_set = biometeoro2.copy()
 for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 	for c_r in colunas_r:
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
@@ -520,7 +521,7 @@ if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
 	plt.show()
 # Até 9 dias retroagidos
-biometeoro_set = biometeoro.copy()
+biometeoro_set = biometeoro2.copy()
 for _r in range(_retroceder[1] + 1, _retroceder[2] +1):
 	for c_r in colunas_r:
 		biometeoro_set[f"{c_r}_r{_r}"] = biometeoro_set[f"{c_r}"].shift(-_r)
@@ -546,7 +547,7 @@ if _VISUALIZAR == "True":
 
 # Dados Brutos de 2022
 # Até 3 dias retroagidos
-ultimo_ano = biometeoro.iloc[-365:,:]
+ultimo_ano = biometeoro.iloc[-365:,:].set_index("data")
 biometeoro_set = ultimo_ano.copy()
 for _r in range(1, _retroceder[0] +1):
 	for c_r in colunas_r:
