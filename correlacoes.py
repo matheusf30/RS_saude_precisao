@@ -314,7 +314,7 @@ print(componente_sazonal)
 #################################################################################
 ### Correlações
 #################################################################################
-_METODO = "spearman"#, "person"
+_METODO = "pearson"#, "pearson", "spearman"
 colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
 			'urmin', 'umidade', 'urmax', 'prec',
 			'pressao', 'ventodir', 'ventovel']
