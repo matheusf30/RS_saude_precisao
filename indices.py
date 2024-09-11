@@ -236,7 +236,8 @@ print(f"\n{green}serie_iam1.describe()\n{reset}{serie_iam1.describe()}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	iam1.to_csv(f'{caminho_indice}serie_IAM1_porto_alegre.csv', index = False)
+	serie_iam1.reset_index(inplace = True)
+	serie_iam1.to_csv(f'{caminho_indice}serie_IAM1_porto_alegre.csv', index = False)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM1_porto_alegre.csv{reset}\n""")
@@ -273,7 +274,8 @@ print(f"\n{green}serie_iam2.describe()\n{reset}{serie_iam2.describe()}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	iam2.to_csv(f'{caminho_indice}serie_IAM2_porto_alegre.csv', index = False)
+	serie_iam2.reset_index(inplace = True)
+	serie_iam2.to_csv(f'{caminho_indice}serie_IAM2_porto_alegre.csv', index = False)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM2_porto_alegre.csv{reset}\n""")
@@ -309,7 +311,8 @@ print(f"\n{green}serie_iam3.describe()\n{reset}{serie_iam3.describe()}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	iam3.to_csv(f'{caminho_indice}serie_IAM3_porto_alegre.csv', index = False)
+	serie_iam3.reset_index(inplace = True)
+	serie_iam3.to_csv(f'{caminho_indice}serie_IAM3_porto_alegre.csv', index = False)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM3_porto_alegre.csv{reset}\n""")
@@ -345,7 +348,8 @@ print(f"\n{green}serie_iam4.describe()\n{reset}{serie_iam4.describe()}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	iam4.to_csv(f'{caminho_indice}serie_IAM4_porto_alegre.csv', index = False)
+	serie_iam4.reset_index(inplace = True)
+	serie_iam4.to_csv(f'{caminho_indice}serie_IAM4_porto_alegre.csv', index = False)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM4_porto_alegre.csv{reset}\n""")
