@@ -149,18 +149,32 @@ print(biometeoro, biometeoro.info())
 print("\nbiometeoro.iloc[-365:,:]\n", biometeoro.iloc[-365:,:])
 #sys.exit()
 
+# Selecionando Períodos
+inverno = biometeoro.copy()
+inverno.set_index("data", inplace = True)
+inverno.index = pd.to_datetime(inverno.index)
+inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
+print(f"\nPERÍODO SELECIONADO: INVERNO\n{inverno}\n{inverno.info()}\n")
+verao = biometeoro.copy()
+verao.set_index("data", inplace = True)
+verao.index = pd.to_datetime(verao.index)
+verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
+print(f"\nPERÍODO SELECIONADO: VERÃO\n{verao}\n{verao.info()}\n")
+#sys.exit()
+
 # Tratando Sazonalidade
 timeindex = biometeoro.copy()
 timeindex = timeindex.set_index("data")
 timeindex["dia"] = timeindex.index.dayofyear
 #timeindex["mes_dia"] = timeindex.index.to_period('M').astype(str) + '-' + timeindex.index.day.astype(str)
-print("\ntimeindex\n", timeindex, timeindex.info())
-#sys.exit()
+print("\ntimeindex\n", timeindex,"~"*80, timeindex.info())
 print("="*80)
+#sys.exit()
 media_dia = timeindex.groupby("dia").mean().round(2)
 media_dia.reset_index(inplace = True)
 print(media_dia)
 print(media_dia.index)
+#sys.exit()
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = media_dia["dia"], y = media_dia["obito"],
 				color = "black", linewidth = 1, label = "Óbito")
@@ -175,11 +189,11 @@ plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}distibuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
-				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
+	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}distibuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Média Anual. {ansi['reset']}")
 	plt.show()
@@ -213,15 +227,15 @@ plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_correlacao}distibuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf',
-				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	#plt.savefig(f'{caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf',
+	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
-	NOME DO ARQUIVO: {caminho_correlacao}distibuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
+	NOME DO ARQUIVO: {caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
 if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a distribuição de tmin, tmax e óbitos do município de Porto Alegre. Série histórica.{ansi['reset']}")
 	plt.show()
-
+#sys.exit()
 # Verificando Tendência
 colunas = ['obito', 'tmin', 'temp', 'tmax', 'amplitude_t',
 			'urmin', 'umidade', 'urmax', 'prec',
@@ -314,11 +328,172 @@ print(componente_sazonal)
 #################################################################################
 ### Correlações
 #################################################################################
-_METODO = "spearman"#, "pearson", "spearman"
+lista_METODO = ["pearson", "spearman"]#, "pearson", "spearman"
 colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
 			'urmin', 'umidade', 'urmax', 'prec',
 			'pressao', 'ventodir', 'ventovel']
 _retroceder = [3, 6, 9]
+
+# Correlações Dados Brutos Durante Invernos
+# Até 3 dias retroagidos
+inverno_set = inverno.copy()
+for _r in range(1, _retroceder[0] +1):
+	for c_r in colunas_r:
+		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
+inverno_set.dropna(inplace = True)
+print("\ninverno_set\n", inverno_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = inverno_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos entre abril e setembro do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+# Até 6 dias retroagidos
+inverno_set = inverno.copy()
+for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
+	for c_r in colunas_r:
+		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
+inverno_set.dropna(inplace = True)
+print("\ninverno_set\n", inverno_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = inverno_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS DURANTE ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO} de dados brutos entre abril e setembro do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+# Até 9 dias retroagidos
+inverno_set = inverno.copy()
+for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
+	for c_r in colunas_r:
+		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
+inverno_set.dropna(inplace = True)
+print("\ninverno_set\n", inverno_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = inverno_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_inverno_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos entre abril e setembro do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+
+# Correlações Dados Brutos Durante Verões
+# Até 3 dias retroagidos
+verao_set = verao.copy()
+for _r in range(1, _retroceder[0] +1):
+	for c_r in colunas_r:
+		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
+verao_set.dropna(inplace = True)
+print("\nverao_set\n", verao_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = verao_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[0]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[0]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos entre dezembro e fevereiro do município de Porto Alegre com até {_retroceder[0]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+# Até 6 dias retroagidos
+verao_set = verao.copy()
+for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
+	for c_r in colunas_r:
+		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
+verao_set.dropna(inplace = True)
+print("\nverao_set\n", verao_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = verao_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS DURANTE ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[1]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[1]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO} de dados brutos entre dezembro e fevereiro do município de Porto Alegre com até {_retroceder[1]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+# Até 9 dias retroagidos
+verao_set = verao.copy()
+for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
+	for c_r in colunas_r:
+		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
+verao_set.dropna(inplace = True)
+print("\nverao_set\n", verao_set)
+for _METODO in lista_METODO:
+	correlacao_dataset = verao_set.corr(method = f"{_METODO}")
+	fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.",
+					weight = "bold", size = "medium")
+	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+	ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+	if _SALVAR == "True":
+		caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+		os.makedirs(caminho_correlacao, exist_ok = True)
+		plt.savefig(f'{caminho_correlacao}matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[2]}d.pdf', format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+		print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+		{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
+		NOME DO ARQUIVO: matriz_correlacao_{_METODO}_verao_Porto_Alegre_r{_retroceder[2]}d.pdf{ansi['reset']}\n""")
+	if _VISUALIZAR == "True":
+		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos entre dezembro e fevereiro do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
+		plt.show()
+sys.exit()
 
 # Anomalias Estacionárias
 # Até 3 dias retroagidos
@@ -619,5 +794,5 @@ if _SALVAR == "True":
 if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos em 2022 do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 	plt.show()
-sys.exit()
+#sys.exit()
 
