@@ -376,12 +376,12 @@ plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
-	os.makedirs(caminho_correlacao, exist_ok = True)
-	plt.savefig(f'{caminho_indice}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
+	os.makedirs(caminho_indice, exist_ok = True)
+	plt.savefig(f'{caminho_indice}serie_IAM_porto_alegre.pdf',
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: distribuicao_obitos_IAMs_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: serie_IAM_porto_alegre.pdf{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índices de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
