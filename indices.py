@@ -24,7 +24,7 @@ _VISUALIZAR = sys.argv[2]    # True|False  ####        #####
                                            ####        #####
 _SALVAR = sys.argv[3]        # True|False  ####        #####
 ###############################################        #####
-                                                       #####
+                                                       ##### FILTRAR AS 5 CID +FREQUENTES
 ############################################################
 """
 _LIMIAR_RETRO = True
