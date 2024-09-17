@@ -25,7 +25,7 @@ _VISUALIZAR = sys.argv[2]    # True|False  ####        #####
 _SALVAR = sys.argv[3]        # True|False  ####        #####
 ###############################################        #####
                                                        ##### FILTRAR AS 5 CID +FREQUENTES
-############################################################
+############################################################ PLOTAR 1 GRÁFICO/ÍNDICE
 """
 _LIMIAR_RETRO = True
 _CLIMA = True
