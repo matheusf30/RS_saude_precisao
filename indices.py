@@ -92,7 +92,14 @@ bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
 total = bio.groupby(by = ["data"])["obito"].sum()
 #sexo = bio.groupby(by = ["data", "sexo"])["obito"].sum()
 #idade = bio.groupby(by = ["data", "idade"])["obito"].sum()
-#causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
+causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
+causa = causa.reset_index()
+causa = causa.rename(columns={causa.columns[-1]: "obito"})
+print(f'\n{green}causa["causa"].value_counts()\n{reset}{causa["causa"].value_counts()}')
+print(f'\n{green}len(causa["causa"].value_counts())\n{reset}{len(causa["causa"].value_counts())}\n')
+serie_total = causa.copy()
+print(f"{green}\ncausa\n{reset}{causa}\n")
+#sys.exit()
 
 # METEOROLOGIA
 meteoro.rename(columns = {"Data Medicao" : "data",
@@ -228,11 +235,35 @@ for coluna in timeindex1.columns:
 	else:
 		print(f"\n{red}Coluna {coluna} não encontrada no timeindex!{reset}\n")
 serie_iam1.drop(columns = "dia", inplace = True)
+print(f"{green}\ncausa\n{reset}{causa}\n")
 print(f"\n{green}serie_iam1\n{reset}{serie_iam1}\n")
 print(f"\n{green}serie_iam1.columns\n{reset}{serie_iam1.columns}\n")
 print(f"\n{green}(serie_iam1 == 0).sum()\n{reset}{(serie_iam1 == 0).sum()}\n")
 print(f"\n{green}len(serie_iam1) - (serie_iam1 == 0).sum()\n{reset}{len(serie_iam1) - (serie_iam1 == 0).sum()}\n")
 print(f"\n{green}serie_iam1.describe()\n{reset}{serie_iam1.describe()}\n")
+serie_indice1 = serie_iam1[serie_iam1["obito"] > 0].index
+print(f"\n{green}serie_obitos = serie_iam1[serie_iam1['obito'] > 0].index\n{reset}{serie_iam1[serie_iam1['obito'] > 0].index}")
+serie_iam1 = serie_total[serie_total["data"].isin(serie_indice1)]
+print(f"\n{green}serie_iam1 = serie_total[serie_total['data'].isin(serie_indice1)\n{reset}{serie_total[serie_total['data'].isin(serie_indice1)]}\n")
+serie_iam1 = pd.pivot_table(serie_iam1, values = "obito", index = "data", columns = "causa", fill_value = 0)
+serie_iam1["total"] = serie_iam1.sum(axis = 1)
+top5 = ["I219", "I259", "I64", "I694", "I639"]
+top10 = ["I619", "I110", "I678", "I500", "I509"]
+top15 = ["I48", "I693", "I10", "I420", "I350"]
+top20 = ["I255", "I501", "I269", "I120", "I119"]
+serie_iam1 = serie_iam1[["total", "I219", "I259", "I64", "I694", "I639",
+							"I619", "I110", "I678", "I500", "I509",
+							"I48", "I693", "I10", "I420", "I350",
+							"I255", "I501", "I269", "I120", "I119"]]
+serie_iam1["total_top5"] = serie_iam1[top5].sum(axis = 1)
+serie_iam1["porcent_top5"] = round(serie_iam1[top5].sum(axis = 1) / serie_iam1["total"] * 100, 2)
+serie_iam1["total_top10"] = serie_iam1[top5+top10].sum(axis = 1)
+serie_iam1["porcent_top10"] = round(serie_iam1[top5+top10].sum(axis = 1) / serie_iam1["total"] * 100, 2)
+serie_iam1["total_top15"] = serie_iam1[top5+top10+top15].sum(axis = 1)
+serie_iam1["porcent_top15"] = round(serie_iam1[top5+top10+top15].sum(axis = 1) / serie_iam1["total"] * 100, 2)
+serie_iam1["total_top20"] = serie_iam1[top5+top10+top15+top20].sum(axis = 1)
+serie_iam1["porcent_top20"] = round(serie_iam1[top5+top10+top15+top20].sum(axis = 1) / serie_iam1["total"] * 100, 2)
+print(f"\n{green}serie_iam1\n{reset}{serie_iam1}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
@@ -271,6 +302,29 @@ print(f"\n{green}serie_iam2.columns\n{reset}{serie_iam2.columns}\n")
 print(f"\n{green}(serie_iam2 == 0).sum()\n{reset}{(serie_iam2 == 0).sum()}\n")
 print(f"\n{green}len(serie_iam2) - (serie_iam2 == 0).sum()\n{reset}{len(serie_iam2) - (serie_iam2 == 0).sum()}\n")
 print(f"\n{green}serie_iam2.describe()\n{reset}{serie_iam2.describe()}\n")
+serie_indice2 = serie_iam2[serie_iam2["obito"] > 0].index
+print(f"\n{green}serie_obitos = serie_iam2[serie_iam2['obito'] > 0].index\n{reset}{serie_iam2[serie_iam2['obito'] > 0].index}")
+serie_iam2 = serie_total[serie_total["data"].isin(serie_indice2)]
+print(f"\n{green}serie_iam2 = serie_total[serie_total['data'].isin(serie_indice2)\n{reset}{serie_total[serie_total['data'].isin(serie_indice2)]}\n")
+serie_iam2 = pd.pivot_table(serie_iam2, values = "obito", index = "data", columns = "causa", fill_value = 0)
+serie_iam2["total"] = serie_iam2.sum(axis = 1)
+top5 = ["I219", "I259", "I64", "I694", "I639"]
+top10 = ["I619", "I110", "I678", "I500", "I509"]
+top15 = ["I48", "I693", "I10", "I420", "I350"]
+top20 = ["I255", "I501", "I269", "I120", "I119"]
+serie_iam2 = serie_iam2[["total", "I219", "I259", "I64", "I694", "I639",
+							"I619", "I110", "I678", "I500", "I509",
+							"I48", "I693", "I10", "I420", "I350",
+							"I255", "I501", "I269", "I120", "I119"]]
+serie_iam2["total_top5"] = serie_iam2[top5].sum(axis = 1)
+serie_iam2["porcent_top5"] = round(serie_iam2[top5].sum(axis = 1) / serie_iam2["total"] * 100, 2)
+serie_iam2["total_top10"] = serie_iam2[top5+top10].sum(axis = 1)
+serie_iam2["porcent_top10"] = round(serie_iam2[top5+top10].sum(axis = 1) / serie_iam2["total"] * 100, 2)
+serie_iam2["total_top15"] = serie_iam2[top5+top10+top15].sum(axis = 1)
+serie_iam2["porcent_top15"] = round(serie_iam2[top5+top10+top15].sum(axis = 1) / serie_iam2["total"] * 100, 2)
+serie_iam2["total_top20"] = serie_iam2[top5+top10+top15+top20].sum(axis = 1)
+serie_iam2["porcent_top20"] = round(serie_iam2[top5+top10+top15+top20].sum(axis = 1) / serie_iam2["total"] * 100, 2)
+print(f"\n{green}serie_iam2\n{reset}{serie_iam2}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
@@ -308,6 +362,29 @@ print(f"\n{green}serie_iam3.columns\n{reset}{serie_iam3.columns}\n")
 print(f"\n{green}(serie_iam3 == 0).sum()\n{reset}{(serie_iam3 == 0).sum()}\n")
 print(f"\n{green}len(serie_iam3) - (serie_iam3 == 0).sum()\n{reset}{len(serie_iam3) - (serie_iam3 == 0).sum()}\n")
 print(f"\n{green}serie_iam3.describe()\n{reset}{serie_iam3.describe()}\n")
+serie_indice3 = serie_iam3[serie_iam3["obito"] > 0].index
+print(f"\n{green}serie_obitos = serie_iam3[serie_iam3['obito'] > 0].index\n{reset}{serie_iam3[serie_iam3['obito'] > 0].index}")
+serie_iam3 = serie_total[serie_total["data"].isin(serie_indice3)]
+print(f"\n{green}serie_iam3 = serie_total[serie_total['data'].isin(serie_indice3)\n{reset}{serie_total[serie_total['data'].isin(serie_indice3)]}\n")
+serie_iam3 = pd.pivot_table(serie_iam3, values = "obito", index = "data", columns = "causa", fill_value = 0)
+serie_iam3["total"] = serie_iam3.sum(axis = 1)
+top5 = ["I219", "I259", "I64", "I694", "I639"]
+top10 = ["I619", "I110", "I678", "I500", "I509"]
+top15 = ["I48", "I693", "I10", "I420", "I350"]
+top20 = ["I255", "I501", "I269", "I120", "I119"]
+serie_iam3 = serie_iam3[["total", "I219", "I259", "I64", "I694", "I639",
+							"I619", "I110", "I678", "I500", "I509",
+							"I48", "I693", "I10", "I420", "I350",
+							"I255", "I501", "I269", "I120", "I119"]]
+serie_iam3["total_top5"] = serie_iam3[top5].sum(axis = 1)
+serie_iam3["porcent_top5"] = round(serie_iam3[top5].sum(axis = 1) / serie_iam3["total"] * 100, 2)
+serie_iam3["total_top10"] = serie_iam3[top5+top10].sum(axis = 1)
+serie_iam3["porcent_top10"] = round(serie_iam3[top5+top10].sum(axis = 1) / serie_iam3["total"] * 100, 2)
+serie_iam3["total_top15"] = serie_iam3[top5+top10+top15].sum(axis = 1)
+serie_iam3["porcent_top15"] = round(serie_iam3[top5+top10+top15].sum(axis = 1) / serie_iam3["total"] * 100, 2)
+serie_iam3["total_top20"] = serie_iam3[top5+top10+top15+top20].sum(axis = 1)
+serie_iam3["porcent_top20"] = round(serie_iam3[top5+top10+top15+top20].sum(axis = 1) / serie_iam3["total"] * 100, 2)
+print(f"\n{green}serie_iam3\n{reset}{serie_iam3}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
@@ -345,6 +422,29 @@ print(f"\n{green}serie_iam4.columns\n{reset}{serie_iam4.columns}\n")
 print(f"\n{green}(serie_iam4 == 0).sum()\n{reset}{(serie_iam4 == 0).sum()}\n")
 print(f"\n{green}len(serie_iam4) - (serie_iam4 == 0).sum()\n{reset}{len(serie_iam4) - (serie_iam4 == 0).sum()}\n")
 print(f"\n{green}serie_iam4.describe()\n{reset}{serie_iam4.describe()}\n")
+serie_indice4 = serie_iam4[serie_iam4["obito"] > 0].index
+print(f"\n{green}serie_obitos = serie_iam4[serie_iam4['obito'] > 0].index\n{reset}{serie_iam4[serie_iam4['obito'] > 0].index}")
+serie_iam4 = serie_total[serie_total["data"].isin(serie_indice4)]
+print(f"\n{green}serie_iam4 = serie_total[serie_total['data'].isin(serie_indice4)\n{reset}{serie_total[serie_total['data'].isin(serie_indice4)]}\n")
+serie_iam4 = pd.pivot_table(serie_iam4, values = "obito", index = "data", columns = "causa", fill_value = 0)
+serie_iam4["total"] = serie_iam4.sum(axis = 1)
+top5 = ["I219", "I259", "I64", "I694", "I639"]
+top10 = ["I619", "I110", "I678", "I500", "I509"]
+top15 = ["I48", "I693", "I10", "I420", "I350"]
+top20 = ["I255", "I501", "I269", "I120", "I119"]
+serie_iam4 = serie_iam4[["total", "I219", "I259", "I64", "I694", "I639",
+							"I619", "I110", "I678", "I500", "I509",
+							"I48", "I693", "I10", "I420", "I350",
+							"I255", "I501", "I269", "I120", "I119"]]
+serie_iam4["total_top5"] = serie_iam4[top5].sum(axis = 1)
+serie_iam4["porcent_top5"] = round(serie_iam4[top5].sum(axis = 1) / serie_iam4["total"] * 100, 2)
+serie_iam4["total_top10"] = serie_iam4[top5+top10].sum(axis = 1)
+serie_iam4["porcent_top10"] = round(serie_iam4[top5+top10].sum(axis = 1) / serie_iam4["total"] * 100, 2)
+serie_iam4["total_top15"] = serie_iam4[top5+top10+top15].sum(axis = 1)
+serie_iam4["porcent_top15"] = round(serie_iam4[top5+top10+top15].sum(axis = 1) / serie_iam4["total"] * 100, 2)
+serie_iam4["total_top20"] = serie_iam4[top5+top10+top15+top20].sum(axis = 1)
+serie_iam4["porcent_top20"] = round(serie_iam4[top5+top10+top15+top20].sum(axis = 1) / serie_iam4["total"] * 100, 2)
+print(f"\n{green}serie_iam4\n{reset}{serie_iam4}\n")
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
@@ -353,7 +453,7 @@ if _SALVAR == "True":
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM4_porto_alegre.csv{reset}\n""")
-
+sys.exit()
 ### Visualização Gráfica dos Índices
 # Todos Juntos
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
