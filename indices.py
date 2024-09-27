@@ -227,8 +227,6 @@ for coluna in timeindex1.columns:
 	if coluna in serie_total1.columns:
 		x_coluna = f"{coluna}_iam1"
 		if x_coluna in serie_total1.columns:
-			#serie_iam1[coluna] = timeindex1[coluna] - serie_total[x_coluna]
-			#serie_iam1[coluna] = timeindex1[coluna].apply(lambda x: timeindex1[coluna] if timeindex1[coluna] > serie_total[x_coluna] else 0)
 			serie_iam1[coluna] = timeindex1[coluna].where(timeindex1[coluna] > serie_total1[x_coluna], 0)
 		else:
 			print(f"\n{red}Coluna {x_coluna} não encontrada na série!{reset}\n")
@@ -453,36 +451,38 @@ if _SALVAR == "True":
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
 	NOME DO ARQUIVO: serie_IAM4_porto_alegre.csv{reset}\n""")
-sys.exit()
+#sys.exit()
 ### Visualização Gráfica dos Índices
+
 # Todos Juntos
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = timeindex.index, y = timeindex["obito"], label = "Óbito",
 				color = "black", linewidth = 1, alpha = 0.5 )
-sns.scatterplot(x = timeindex.index, y = serie_iam1["obito"],
+sns.scatterplot(x = serie_iam1.index, y = serie_iam1["total_top20"],
 				color = "blue", marker = "D", alpha = 0.7,
 				label = "IAM1 = média diária + 1,6 * desvio padrão diário")
-sns.scatterplot(x = timeindex.index, y = serie_iam2["obito"],
+sns.scatterplot(x = serie_iam2.index, y = serie_iam2["total_top20"],
 				color = "green", marker = "o",# alpha = 0.7,
 				label = "IAM2 = média diária + 3 * desvio padrão diário")
-sns.scatterplot(x = timeindex.index, y = serie_iam3["obito"],
+sns.scatterplot(x = serie_iam3.index, y = serie_iam3["total_top20"],
 				color = "purple", marker = "x", alpha = 0.7,
 				label = "IAM3 = percentil 75")
-sns.scatterplot(x = timeindex.index, y = serie_iam4["obito"],
+sns.scatterplot(x = serie_iam4.index, y = serie_iam4["total_top20"],
 				color = "red", marker = ".", alpha = 0.7,
 				label = "IAM4 = terceiro quartil + 1,5 * intervalo interquartil")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ÍNDICES DE ALTA MORTALIDADE.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
+nome_arquivo = "serie_IAM_top20_porto_alegre.pdf"
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	plt.savefig(f'{caminho_indice}serie_IAM_porto_alegre.pdf',
+	plt.savefig(f"{caminho_indice}{nome_arquivo}",
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: serie_IAM_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índices de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
@@ -490,21 +490,22 @@ if _VISUALIZAR == "True":
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = timeindex.index, y = timeindex["obito"], label = "Óbito",
 				color = "black", linewidth = 1, alpha = 0.7 )
-sns.scatterplot(x = timeindex.index, y = serie_iam1["obito"],
+sns.scatterplot(x = serie_iam1.index, y = serie_iam1["total_top20"],
 				color = "blue", marker = "o", alpha = 0.7,
-				label = "IAM1 = média diária + 1,6 * desvio padrão diário")
+				label = "IAM1 = média diária + 1,96 * desvio padrão diário")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ÍNDICES DE ALTA MORTALIDADE.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
+nome_arquivo = "serie_IAM1_top20_porto_alegre.pdf"
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	plt.savefig(f'{caminho_indice}serie_IAM1_porto_alegre.pdf',
+	plt.savefig(f"{caminho_indice}{nome_arquivo}",
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: serie_IAM1_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índice 1 de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
@@ -512,21 +513,22 @@ if _VISUALIZAR == "True":
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = timeindex.index, y = timeindex["obito"], label = "Óbito",
 				color = "black", linewidth = 1, alpha = 0.7 )
-sns.scatterplot(x = timeindex.index, y = serie_iam2["obito"],
+sns.scatterplot(x = serie_iam2.index, y = serie_iam2["total_top20"],
 				color = "green", marker = "o",# alpha = 0.7,
 				label = "IAM2 = média diária + 3 * desvio padrão diário")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ÍNDICES DE ALTA MORTALIDADE.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
+nome_arquivo = "serie_IAM2_top20_porto_alegre.pdf"
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	plt.savefig(f'{caminho_indice}serie_IAM2_porto_alegre.pdf',
+	plt.savefig(f"{caminho_indice}{nome_arquivo}",
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: serie_IAM2_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índice 2 de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
@@ -534,21 +536,22 @@ if _VISUALIZAR == "True":
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = timeindex.index, y = timeindex["obito"], label = "Óbito",
 				color = "black", linewidth = 1, alpha = 0.7 )
-sns.scatterplot(x = timeindex.index, y = serie_iam3["obito"],
+sns.scatterplot(x = serie_iam3.index, y = serie_iam3["total_top20"],
 				color = "purple", marker = "o", alpha = 0.7,
 				label = "IAM3 = percentil 75")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ÍNDICES DE ALTA MORTALIDADE.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
+nome_arquivo = "serie_IAM3_top20_porto_alegre.pdf"
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	plt.savefig(f'{caminho_indice}serie_IAM3_porto_alegre.pdf',
+	plt.savefig(f"{caminho_indice}{nome_arquivo}",
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: serie_IAM3_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índice 3 de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
@@ -556,21 +559,22 @@ if _VISUALIZAR == "True":
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = timeindex.index, y = timeindex["obito"], label = "Óbito",
 				color = "black", linewidth = 1, alpha = 0.7 )
-sns.scatterplot(x = timeindex.index, y = serie_iam4["obito"],
+sns.scatterplot(x = serie_iam4.index, y = serie_iam4["total_top20"],
 				color = "red", marker = "o", alpha = 0.7,
 				label = "IAM4 = terceiro quartil + 1,5 * intervalo interquartil")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ÍNDICES DE ALTA MORTALIDADE.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares")
+nome_arquivo = "serie_IAM4_top20_porto_alegre.pdf"
 if _SALVAR == "True":
 	caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 	os.makedirs(caminho_indice, exist_ok = True)
-	plt.savefig(f'{caminho_indice}serie_IAM4_porto_alegre.pdf',
+	plt.savefig(f"{caminho_indice}{nome_arquivo}",
 				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{green}SALVO COM SUCESSO!
 	{cyan}ENCAMINHAMENTO: {caminho_indice}
-	NOME DO ARQUIVO: serie_IAM4_porto_alegre.pdf{reset}\n""")
+	NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 if _VISUALIZAR == "True":
 	print(f"{green}Exibindo a distribuição de óbitos e índice 4 de alta mortalidade do município de Porto Alegre.{reset}")
 	plt.show()
