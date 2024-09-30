@@ -77,3 +77,28 @@ print(f"\n{green}IAM2\n{reset}{iam2}\n")
 print(f"\n{green}IAM3\n{reset}{iam3}\n")
 print(f"\n{green}IAM4\n{reset}{iam4}\n")
 
+### Concatenando CIDs e Meteorologia
+meteoro1_in = meteoro.merge(iam1, on = "data", how = "inner")
+meteoro2_in = meteoro.merge(iam2, on = "data", how = "inner")
+meteoro3_in = meteoro.merge(iam3, on = "data", how = "inner")
+meteoro4_in = meteoro.merge(iam4, on = "data", how = "inner")
+print(f"\n{green}IAM1 INNER\n{reset}{meteoro1_in}\n")
+print(f"\n{green}IAM2 INNER\n{reset}{meteoro2_in}\n")
+print(f"\n{green}IAM3 INNER\n{reset}{meteoro3_in}\n")
+print(f"\n{green}IAM4 INNER\n{reset}{meteoro4_in}\n")
+meteoro1_out = meteoro.merge(iam1, on = "data", how = "outer").fillna(0)
+meteoro2_out = meteoro.merge(iam2, on = "data", how = "outer").fillna(0)
+meteoro3_out = meteoro.merge(iam3, on = "data", how = "outer").fillna(0)
+meteoro4_out = meteoro.merge(iam4, on = "data", how = "outer").fillna(0)
+print(f"\n{green}IAM1 OUTER\n{reset}{meteoro1_out}\n")
+print(f"\n{green}IAM2 OUTER\n{reset}{meteoro2_out}\n")
+print(f"\n{green}IAM3 OUTER\n{reset}{meteoro3_out}\n")
+print(f"\n{green}IAM4 OUTER\n{reset}{meteoro4_out}\n")
+print(f"\n{green}IAM4 OUTER (COLUMNS)\n{reset}{meteoro4_out.columns}\n")
+
+
+
+
+
+
+
