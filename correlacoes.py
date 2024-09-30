@@ -134,7 +134,7 @@ if _SALVAR == "True":
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_dados}\n
 	NOME DO ARQUIVO: {caminho_dados}{nome_arquivo}{ansi['reset']}\n""")
-sys.exit()
+#sys.exit()
 
 # BIOMETEORO
 meteoro.reset_index(inplace = True)
