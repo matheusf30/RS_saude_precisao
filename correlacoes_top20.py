@@ -122,6 +122,36 @@ for idx, arquivo in enumerate(lista_arquivos):
 		if _VISUALIZAR == "True":
 			print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
 			plt.show()
+sys.exit()
+retroagir = [1, 2, 3, 4, 5, 6, 7]
+for idx, arquivo in enumerate(lista_arquivos):
+	arquivo.set_index("data", inplace = True)
+	arquivo.drop(columns = colunas_retirar, inplace = True)
+	arquivo.dropna(inplace = True)
+	for _METODO in lista_METODO:
+		for r in retroagir:
+			IAM = IAMs[idx]
+			nome_arquivo = f"matriz_correlacao_{_METODO}_{IAM}_top20_ r{r}_Porto_Alegre.pdf"
+			correlacao_dataset
+			correlacao_dataset = arquivo.corr(method = f"{_METODO}")
+			print(f"\n{green}{nome_arquivo}\n{reset}{correlacao_dataset}\n")
+			fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
+			filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
+			sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+			fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} ENTRE DADOS METEOROLÓGICOS E PRINCIPAIS ÓBITOS CARDIOVASCULARES.\nMUNICÍPIO DE PORTO ALEGRE, ÍNDICE DE ALTA MORTALIDADE ({IAM}), RETROAGINDO ({r}d).",
+						weight = "bold", size = "medium")
+			ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
+			ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
+			if _SALVAR == "True":
+				caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
+				os.makedirs(caminho_correlacao, exist_ok = True)
+				plt.savefig(f"{caminho_correlacao}{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+				print(f"""\n{green}SALVO COM SUCESSO!\n
+				{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
+				NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
+			if _VISUALIZAR == "True":
+				print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
+				plt.show()
 print(f"\n{green}IAM DATAS FILTRADAS\n{reset}{arquivo}\n")
 
 sys.exit()
