@@ -124,7 +124,17 @@ meteoro["urmin"] = urmin
 meteoro["urmax"] = urmax
 meteoro["amplitude_t"] = meteoro["tmax"] - meteoro["tmin"]
 print(meteoro)
-#sys.exit()
+if _SALVAR == "True":
+	nome_arquivo = "meteoro_porto_alegre.csv"
+	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
+	os.makedirs(caminho_dados, exist_ok = True)
+	meteoro.to_csv(f"{caminho_dados}{nome_arquivo}", index = False)
+	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
+	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
+	{ansi['cyan']}ENCAMINHAMENTO: {caminho_dados}\n
+	NOME DO ARQUIVO: {caminho_dados}{nome_arquivo}{ansi['reset']}\n""")
+sys.exit()
 
 # BIOMETEORO
 meteoro.reset_index(inplace = True)
