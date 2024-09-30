@@ -128,7 +128,7 @@ if _SALVAR == "True":
 	nome_arquivo = "meteoro_porto_alegre.csv"
 	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
 	os.makedirs(caminho_dados, exist_ok = True)
-	meteoro.to_csv(f"{caminho_dados}{nome_arquivo}", index = False)
+	meteoro.to_csv(f"{caminho_dados}{nome_arquivo}", index = True)
 	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
 	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
