@@ -97,7 +97,7 @@ lista_arquivos = [meteoro1_in, meteoro2_in, meteoro3_in, meteoro4_in]
 IAMs = ["IAM1", "IAM2", "IAM3", "IAM4"]
 colunas_retirar = ["total_top5", "porcent_top5", "total_top10", "porcent_top10",
 				"total_top15", "porcent_top15", "total_top20", "porcent_top20"]
-"""
+
 for idx, arquivo in enumerate(lista_arquivos):
 	arquivo.set_index("data", inplace = True)
 	arquivo.drop(columns = colunas_retirar, inplace = True)
@@ -118,13 +118,12 @@ for idx, arquivo in enumerate(lista_arquivos):
 			caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 			os.makedirs(caminho_correlacao, exist_ok = True)
 			plt.savefig(f"{caminho_correlacao}{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
-"""
-#			print(f"""\n{green}SALVO COM SUCESSO!\n
-#			{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
-#			NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
-#		if _VISUALIZAR == "True":
-#			print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
-#			plt.show()
+			print(f"""\n{green}SALVO COM SUCESSO!\n
+			{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
+			NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
+		if _VISUALIZAR == "True":
+			print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
+			plt.show()
 #sys.exit()
 
 retroagir = [1, 2, 3, 4, 5, 6, 7]
