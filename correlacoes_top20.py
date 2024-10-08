@@ -78,8 +78,20 @@ print(f"\n{green}IAM3\n{reset}{iam3}\n")
 print(f"\n{green}IAM4\n{reset}{iam4}\n")
 print(f"\n{green}IAM4.columns\n{reset}{iam4.columns}\n")
 
+# Selecionando sazonalidade
+inverno = meteoro.copy()
+inverno.set_index("data", inplace = True)
+inverno.index = pd.to_datetime(inverno.index)
+inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
+print(f"\nPERÍODO SELECIONADO: INVERNO\n{inverno}\n{inverno.info()}\n")
+verao = meteoro.copy()
+verao.set_index("data", inplace = True)
+verao.index = pd.to_datetime(verao.index)
+verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
+print(f"\nPERÍODO SELECIONADO: VERÃO\n{verao}\n{verao.info()}\n")
+
 ### Concatenando CIDs e Meteorologia
-# Apenas os dias filtrados
+# Apenas os dias filtrados (Série Total)
 meteoro1_in = meteoro.merge(iam1, on = "data", how = "inner")
 meteoro2_in = meteoro.merge(iam2, on = "data", how = "inner")
 meteoro3_in = meteoro.merge(iam3, on = "data", how = "inner")
@@ -89,11 +101,34 @@ print(f"\n{green}IAM2 INNER\n{reset}{meteoro2_in}\n")
 print(f"\n{green}IAM3 INNER\n{reset}{meteoro3_in}\n")
 print(f"\n{green}IAM4 INNER\n{reset}{meteoro4_in}\n")
 print(f"\n{green}IAM4 INNER (COLUMNS)\n{reset}{meteoro4_in.columns}\n")
+# Apenas os dias filtrados (Período Frio)
+inverno1_in = inverno.merge(iam1, on = "data", how = "inner")
+inverno2_in = inverno.merge(iam2, on = "data", how = "inner")
+inverno3_in = inverno.merge(iam3, on = "data", how = "inner")
+inverno4_in = inverno.merge(iam4, on = "data", how = "inner")
+print(f"\n{green}IAM1 INNER\n{reset}{inverno1_in}\n")
+print(f"\n{green}IAM2 INNER\n{reset}{inverno2_in}\n")
+print(f"\n{green}IAM3 INNER\n{reset}{inverno3_in}\n")
+print(f"\n{green}IAM4 INNER\n{reset}{inverno4_in}\n")
+print(f"\n{green}IAM4 INNER (COLUMNS)\n{reset}{inverno4_in.columns}\n")
+# Apenas os dias filtrados (Período Quente)
+verao1_in = verao.merge(iam1, on = "data", how = "inner")
+verao2_in = verao.merge(iam2, on = "data", how = "inner")
+verao3_in = verao.merge(iam3, on = "data", how = "inner")
+verao4_in = verao.merge(iam4, on = "data", how = "inner")
+print(f"\n{green}IAM1 INNER\n{reset}{verao1_in}\n")
+print(f"\n{green}IAM2 INNER\n{reset}{verao2_in}\n")
+print(f"\n{green}IAM3 INNER\n{reset}{verao3_in}\n")
+print(f"\n{green}IAM4 INNER\n{reset}{verao4_in}\n")
+print(f"\n{green}IAM4 INNER (COLUMNS)\n{reset}{verao4_in.columns}\n")
+# Iniciando laços de Correlações
 lista_METODO = ["pearson", "spearman"]#, "pearson", "spearman"
-colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
-			'urmin', 'umidade', 'urmax', 'prec',
-			'pressao', 'ventodir', 'ventovel']
-lista_arquivos = [meteoro1_in, meteoro2_in, meteoro3_in, meteoro4_in]
+colunas_r = ["tmin", "temp", "tmax", "amplitude_t",
+			"urmin", "umidade", "urmax", "prec",
+			"pressao", "ventodir", "ventovel"]
+lista_arquivos = [meteoro1_in, meteoro2_in, meteoro3_in, meteoro4_in,
+					inverno1_in, inverno2_in, inverno3_in, inverno4_in,
+					verao1_in, verao2_in, verao3_in, verao4_in]
 IAMs = ["IAM1", "IAM2", "IAM3", "IAM4"]
 colunas_retirar = ["total_top5", "porcent_top5", "total_top10", "porcent_top10",
 				"total_top15", "porcent_top15", "total_top20", "porcent_top20"]
@@ -118,13 +153,14 @@ for idx, arquivo in enumerate(lista_arquivos):
 			caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
 			os.makedirs(caminho_correlacao, exist_ok = True)
 			plt.savefig(f"{caminho_correlacao}{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+
 			print(f"""\n{green}SALVO COM SUCESSO!\n
 			{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
 			NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 		if _VISUALIZAR == "True":
 			print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
 			plt.show()
-#sys.exit()
+sys.exit()
 
 retroagir = [1, 2, 3, 4, 5, 6, 7]
 for idx, arquivox in enumerate(lista_arquivos):
