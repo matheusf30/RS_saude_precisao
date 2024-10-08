@@ -353,3 +353,12 @@ print(f"\n{green}IAM2 OUTER\n{reset}{meteoro2_out}\n")
 print(f"\n{green}IAM3 OUTER\n{reset}{meteoro3_out}\n")
 print(f"\n{green}IAM4 OUTER\n{reset}{meteoro4_out}\n")
 print(f"\n{green}IAM4 OUTER (COLUMNS)\n{reset}{meteoro4_out.columns}\n")
+<<<<<<< HEAD
+=======
+
+
+
+
+
+
+>>>>>>> f19744377ea22ce95d1c8a63671575a73cad1f66
