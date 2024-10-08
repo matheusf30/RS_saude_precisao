@@ -161,6 +161,9 @@ def correlacao_retroagindo(lista_arquivos, str_arq):
 	IAMs = ["IAM1", "IAM2", "IAM3", "IAM4"]
 	colunas_retirar = ["total_top5", "porcent_top5", "total_top10", "porcent_top10",
 						"total_top15", "porcent_top15", "total_top20", "porcent_top20"]
+	colunas_r = ["tmin", "temp", "tmax", "amplitude_t",
+			"urmin", "umidade", "urmax", "prec",
+			"pressao", "ventodir", "ventovel"]
 	for idx, arquivox in enumerate(lista_arquivos):
 		arquivox.set_index("data", inplace = True)
 		arquivox.drop(columns = colunas_retirar, inplace = True)
@@ -169,7 +172,12 @@ def correlacao_retroagindo(lista_arquivos, str_arq):
 			for r in retroagir:
 				IAM = IAMs[idx]
 				arquivo = arquivox.copy()
-				nome_arquivo = f"matriz_correlacao_{_METODO}_{IAM}_{str_arq}_top20_Porto_Alegre.pdf"
+				nome_arquivo = f"matriz_correlacao_{_METODO}_{IAM}_{str_arq}_r{r}_top20_Porto_Alegre.pdf"
+				for c in colunas_r:
+					arquivo[f"{c}_r{r}"] = arquivo[c].shift(-r)
+				arquivo.dropna(inplace = True)
+				arquivo.drop(columns = colunas_r, inplace = True)
+				print(f"\n{green}{nome_arquivo}\n{reset}{arquivo}\n")
 				correlacao_dataset = arquivo.corr(method = f"{_METODO}")
 				print(f"\n{green}{nome_arquivo}\n{reset}{correlacao_dataset}\n")
 				fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
@@ -339,7 +347,7 @@ sys.exit()
 meteoro1_out = meteoro.merge(iam1, on = "data", how = "outer").fillna(0)
 meteoro2_out = meteoro.merge(iam2, on = "data", how = "outer").fillna(0)
 meteoro3_out = meteoro.merge(iam3, on = "data", how = "outer").fillna(0)
-meteoro4_out = meteoro.merge(iam4, on = "data", how = "outer"A).fillna(0)
+meteoro4_out = meteoro.merge(iam4, on = "data", how = "outer").fillna(0)
 print(f"\n{green}IAM1 OUTER\n{reset}{meteoro1_out}\n")
 print(f"\n{green}IAM2 OUTER\n{reset}{meteoro2_out}\n")
 print(f"\n{green}IAM3 OUTER\n{reset}{meteoro3_out}\n")
