@@ -83,12 +83,14 @@ inverno = meteoro.copy()
 inverno.set_index("data", inplace = True)
 inverno.index = pd.to_datetime(inverno.index)
 inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
-print(f"\nPERÍODO SELECIONADO: INVERNO\n{inverno}\n{inverno.info()}\n")
+inverno.reset_index(inplace = True)
+print(f"\n{green}PERÍODO SELECIONADO: INVERNO\n{reset}{inverno}\n{inverno.info()}\n")
 verao = meteoro.copy()
 verao.set_index("data", inplace = True)
 verao.index = pd.to_datetime(verao.index)
 verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
-print(f"\nPERÍODO SELECIONADO: VERÃO\n{verao}\n{verao.info()}\n")
+verao.reset_index(inplace = True)
+print(f"\n{green}PERÍODO SELECIONADO: VERÃO\n{verao}\n{reset}{verao.info()}\n")
 
 ### Concatenando CIDs e Meteorologia
 # Apenas os dias filtrados (Série Total)
