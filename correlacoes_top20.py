@@ -39,23 +39,13 @@ white = "\033[37m"
 reset = "\033[0m"
 #################################################################################
 
-match _LOCAL:
-	case "GH":
-		caminho_dados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/dados/"
-		caminho_resultados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/resultados/porto_alegre/"
-		caminho_modelos = "https://github.com/matheusf30/RS_saude_precisao/tree/main/modelos/"
-	case "SIFAPSC":
-		caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
-		caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
-	case "CLUSTER":
-		caminho_dados = "..."
-	case "CASA":
-		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
-		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
-	case _:
-		print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
+caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
+caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
+caminho_indice = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
+caminho_top20 = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/top20/"
+
+print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
@@ -134,25 +124,26 @@ def correlacao_sem_retroacao(lista_arquivos, str_arq):
 		arquivo.dropna(inplace = True)
 		for _METODO in lista_METODO:
 			IAM = IAMs[idx]
-			nome_arquivo = f"matriz_correlacao_{_METODO}_{IAM}_{str_arq}_top20_Porto_Alegre.pdf"
+			nome_arquivo = f"matriz_correlacao_{_METODO}_{IAM}_{str_arq}_r0_top20_Porto_Alegre.pdf"
 			correlacao_dataset = arquivo.corr(method = f"{_METODO}")
 			print(f"\n{green}{nome_arquivo}\n{reset}{correlacao_dataset}\n")
 			fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 			filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 			sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-			fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} ENTRE DADOS METEOROLÓGICOS E PRINCIPAIS ÓBITOS CARDIOVASCULARES.\nMUNICÍPIO DE PORTO ALEGRE, ÍNDICE DE ALTA MORTALIDADE ({IAM}) .",
-						weight = "bold", size = "medium")
+			titulo_l1 = f"MATRIZ DE CORRELAÇÃO* ENTRE DADOS METEOROLÓGICOS E PRINCIPAIS ÓBITOS CARDIOVASCULARES**"
+			titulo_l2 = f"MUNICÍPIO DE PORTO ALEGRE***, ÍNDICE DE ALTA MORTALIDADE****"
+			titulo_l3 = f"(*{_METODO.upper()} - **SEM RETROAÇÃO - ***{str_arq.upper()} - ****{IAM})"
+			fig.suptitle(f"{titulo_l1}\n{titulo_l2}\n{titulo_l3}", weight = "bold", size = "medium")
 			ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 			ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 			if _SALVAR == "True":
-				caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
-				os.makedirs(caminho_correlacao, exist_ok = True)
-				plt.savefig(f"{caminho_correlacao}{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+				os.makedirs(f"{caminho_top20}{IAM}/", exist_ok = True)
+				plt.savefig(f"{caminho_top20}{IAM}/{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 				print(f"""\n{green}SALVO COM SUCESSO!\n
-				{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
+				{cyan}ENCAMINHAMENTO: {caminho_top20}{IAM}/\n
 				NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 			if _VISUALIZAR == "True":
-				print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
+				print(f"{green}{nome_arquivo.upper()}{reset}")
 				plt.show()
 
 def correlacao_retroagindo(lista_arquivos, str_arq):
@@ -183,22 +174,24 @@ def correlacao_retroagindo(lista_arquivos, str_arq):
 				fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 				filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 				sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
-				fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} ENTRE DADOS METEOROLÓGICOS E PRINCIPAIS ÓBITOS CARDIOVASCULARES.\nMUNICÍPIO DE PORTO ALEGRE, ÍNDICE DE ALTA MORTALIDADE ({IAM}) .",
-							weight = "bold", size = "medium")
+				titulo_l1 = f"MATRIZ DE CORRELAÇÃO* ENTRE DADOS METEOROLÓGICOS E PRINCIPAIS ÓBITOS CARDIOVASCULARES**"
+				titulo_l2 = f"MUNICÍPIO DE PORTO ALEGRE***, ÍNDICE DE ALTA MORTALIDADE****"
+				if r == 1:
+					titulo_l3 = f"(*{_METODO.upper()} - **RETROAGINDO {r} DIA - ***{str_arq.upper()} - ****{IAM})"
+				else:
+					titulo_l3 = f"(*{_METODO.upper()} - **RETROAGINDO {r} DIAS - ***{str_arq.upper()} - ****{IAM})"
+				fig.suptitle(f"{titulo_l1}\n{titulo_l2}\n{titulo_l3}", weight = "bold", size = "medium")
 				ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 				ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
 				if _SALVAR == "True":
-					caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/correlacoes/"
-					os.makedirs(caminho_correlacao, exist_ok = True)
-					plt.savefig(f"{caminho_correlacao}{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+					os.makedirs(f"{caminho_top20}{IAM}/", exist_ok = True)
+					plt.savefig(f"{caminho_top20}{IAM}/{nome_arquivo}", format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 					print(f"""\n{green}SALVO COM SUCESSO!\n
-					{cyan}ENCAMINHAMENTO: {caminho_correlacao}\n
+					{cyan}ENCAMINHAMENTO: {caminho_top20}{IAM}/\n
 					NOME DO ARQUIVO: {nome_arquivo}{reset}\n""")
 				if _VISUALIZAR == "True":
-					print(f"{green}Exibindo a Matriz de Correlação de {_METODO.title()}. Município de Porto Alegre, {IAM}{reset}")
+					print(f"{green}Exibindo:{nome_arquivo.upper()}{reset}")
 					plt.show()
-
-
 
 # Executando Funções
 inverno, verao = selecionando_periodos(meteoro)
@@ -209,7 +202,7 @@ verao_in_1, verao_in_2, verao_in_3, verao_in_4 = concatenando_indices_inner(vera
 lista_in_total = [meteoro_in_1, meteoro_in_2, meteoro_in_3, meteoro_in_4]
 lista_in_inverno = [inverno_in_1, inverno_in_2, inverno_in_3, inverno_in_4]
 lista_in_verao = [verao_in_1, verao_in_2, verao_in_3, verao_in_4]
-correlacao_sem_retroacao(lista_in_total, "total")
+correlacao_sem_retroacao(lista_in_total, "anual")
 correlacao_sem_retroacao(lista_in_inverno, "inverno")
 correlacao_sem_retroacao(lista_in_verao, "verao")
 # Correlações Retroagindo até 7 Dias
@@ -219,9 +212,10 @@ verao_out_1, verao_out_2, verao_out_3, verao_out_4 = concatenando_indices_outer(
 lista_out_total = [meteoro_out_1, meteoro_out_2, meteoro_out_3, meteoro_out_4]
 lista_out_inverno = [inverno_out_1, inverno_out_2, inverno_out_3, inverno_out_4]
 lista_out_verao = [verao_out_1, verao_out_2, verao_out_3, verao_out_4]
-correlacao_retroagindo(lista_out_total, "total")
+correlacao_retroagindo(lista_out_total, "anual")
 correlacao_retroagindo(lista_out_inverno, "inverno")
 correlacao_retroagindo(lista_out_verao, "verao")
+
 sys.exit()
 
 ### Concatenando CIDs e Meteorologia
@@ -264,7 +258,6 @@ lista_arquivos = [meteoro1_in, meteoro2_in, meteoro3_in, meteoro4_in]
 IAMs = ["IAM1", "IAM2", "IAM3", "IAM4"]
 colunas_retirar = ["total_top5", "porcent_top5", "total_top10", "porcent_top10",
 				"total_top15", "porcent_top15", "total_top20", "porcent_top20"]
-
 for idx, arquivo in enumerate(lista_arquivos):
 	arquivo.set_index("data", inplace = True)
 	arquivo.drop(columns = colunas_retirar, inplace = True)
@@ -353,12 +346,4 @@ print(f"\n{green}IAM2 OUTER\n{reset}{meteoro2_out}\n")
 print(f"\n{green}IAM3 OUTER\n{reset}{meteoro3_out}\n")
 print(f"\n{green}IAM4 OUTER\n{reset}{meteoro4_out}\n")
 print(f"\n{green}IAM4 OUTER (COLUMNS)\n{reset}{meteoro4_out.columns}\n")
-<<<<<<< HEAD
-=======
 
-
-
-
-
-
->>>>>>> f19744377ea22ce95d1c8a63671575a73cad1f66
