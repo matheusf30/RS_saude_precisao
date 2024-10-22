@@ -77,12 +77,31 @@ print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminh
 
 ### Renomeação das Variáveis pelos Arquivos
 meteoro = "meteoro_porto_alegre.csv"
+bio = "obito_cardiovasc_total_poa_96-22.csv"
 p75 = "serie_IAM3_porto_alegre.csv"
 
 ### Abrindo Arquivo
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)#, skiprows = 10, sep = ";")
+meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
+bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
+bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
+bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
+bio.reset_index(inplace = True)
+bio["obito"] = np.ones(len(bio)).astype(int)
+bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace = True)
+bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
+obito_total = bio.groupby(by = ["data"])["obito"].sum()
+obito_total = obito_total.reset_index()
+obito_total.columns = ["data", "obitos"]
+obito_total.to_csv(f"{caminho_dados}obito_total_{_cidade}.csv", index = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
+print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
+print(f"\n{green}p75:\n{reset}{p75}\n")
+x1 = p75["total"]
+x2 = p75["total_top20"]
+x3 = p75["I219"]
+print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
+print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
 print(f"\n{green}p75:\n{reset}{p75}\n")
 sys.exit()
 
