@@ -38,7 +38,7 @@ reset = "\033[0m"
 ### CONDIÇÕES PARA VARIAR ########################################
 ##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
 _AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZA = True if _AUTOMATIZAR == "True" else False      #####
+_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False      #####
 _VISUALIZAR = sys.argv[2]    # True|False                    #####
 _VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
 _SALVAR = sys.argv[3]        # True|False                    #####
@@ -52,6 +52,7 @@ _JANELA_MM = 0 # Média Móvel
 _K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
+cidades = "Porto Alegre"
 _CIDADE = cidade.upper()
 troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
          'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
@@ -80,10 +81,30 @@ meteoro = "meteoro_porto_alegre.csv"
 bio = "obito_cardiovasc_total_poa_96-22.csv"
 p75 = "serie_IAM3_porto_alegre.csv"
 
-### Abrindo Arquivo
+### Abrindo Arquivo e Pré-processamento
+# Meteoro
 meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
+meteoro["data"] = pd.to_datetime(meteoro["data"])
+# Wind Chill #https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z/wind-chill.html
+# Farenheit # miles per hour # https://www.weather.gov/media/epz/wxcalc/windChill.pdf
+meteoro["ventovel"] = meteoro["ventovel"] * 3.6 # m/s >> km/h
+Tc = meteoro["temp"] # T (C) < 10
+Tf = ((meteoro["temp"] * 9) / 5) + 32  # C >> F 
+Vkmh = meteoro["ventovel"] * 3.6 # ms >> km/h # V (km/h) > 4.82
+Vmph = meteoro["ventovel"] * 2.237 # ms >> mph 
+RH = meteoro["umidade"] # %
+#meteoro["wind_chill"] = 13.12 + 0.6215 * Tc - 11.37 * Vkmh**0.16 + 0.3965 * Tc * Vkmh**0.16 # C km/h # Fazer condicionantes
+meteoro["wind_chill"] = 35.74 + 0.6215 * Tf - 35.75 * Vmph**0.16 + 0.4275 * Tf * Vmph**0.16 # F mph # Fazer condicionantes
+#meteoro["wind_chill"] = np.where((Tc < 10) & (Vkmh > 4.82),  meteoro["wind_chill"], None)
+# Heat Index #
+meteoro["heat_index"] =  -42.379 + 2.04901523*Tf + 10.14333127*RH - .22475541*Tf*RH - .00683783*Tf*Tf - .05481717*RH*RH + .00122874*Tf*Tf*RH + .00085282*Tf*RH*RH - .00000199*Tf*Tf*RH*RH
+ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf - 95.)) / 17)
+ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
+#meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
+#meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
+#
+# Saúde
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
-p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
 bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
 bio.reset_index(inplace = True)
@@ -94,24 +115,49 @@ obito_total = bio.groupby(by = ["data"])["obito"].sum()
 obito_total = obito_total.reset_index()
 obito_total.columns = ["data", "obitos"]
 obito_total.to_csv(f"{caminho_dados}obito_total_{_cidade}.csv", index = False)
+# Percentil 75
+p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
+print(f"\n{green}meteoro.info():\n{reset}{meteoro.info()}\n")
 print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
 print(f"\n{green}p75:\n{reset}{p75}\n")
-x1 = p75["total"]
-x2 = p75["total_top20"]
-x3 = p75["I219"]
-print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
-print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
-print(f"\n{green}p75:\n{reset}{p75}\n")
-sys.exit()
+#sys.exit()
 
-
-
-### Montando Dataset
-dataset = biometeoro.copy()
-dataset.dropna(inplace = True)
-print(dataset)
-
+### Montando Datasets
+x1 = obito_total[["data","obitos"]]
+x1["data"] = pd.to_datetime(x1["data"])
+x2 = p75[["data", "total"]]
+x2.rename(columns = {"total": "totalp75"}, inplace = True)
+x2["data"] = pd.to_datetime(x2["data"])
+x3 = p75[["data","I219"]]
+x3.rename(columns = {"I219": "infarto_agudo_miocardio"}, inplace = True)
+x3["data"] = pd.to_datetime(x3["data"])
+print(f"\n{green}x1:\n{reset}{x1}\n")
+print(f"\n{green}x1.info():\n{reset}{x1.info()}\n")
+print(f"\n{green}x2:\n{reset}{x2}\n")
+print(f"\n{green}x2.info():\n{reset}{x2.info()}\n")
+print(f"\n{green}x3:\n{reset}{x3}\n")
+print(f"\n{green}x3.info():\n{reset}{x3.info()}\n")
+#dataset1 = x1.copy()
+dataset1 = meteoro.merge(x1[["data", "obitos"]], how = "right", on = "data")
+dataset1.dropna(inplace = True)
+#dataset2 = x2.copy()
+dataset2 = meteoro.merge(x2[["data", "totalp75"]], how = "right", on = "data")
+dataset2.dropna(inplace = True)
+#dataset3 = x3.copy()
+dataset3 = meteoro.merge(x3[["data", "infarto_agudo_miocardio"]], how = "right", on = "data")
+dataset3.dropna(inplace = True)
+print(f"\n{green}dataset1:\n{reset}{dataset1}\n")
+print(f"\n{green}dataset1.info():\n{reset}{dataset1.info()}\n")
+print(f"\n{green}dataset2:\n{reset}{dataset2}\n")
+print(f"\n{green}dataset2.info():\n{reset}{dataset2.info()}\n")
+print(f"\n{green}dataset3:\n{reset}{dataset3}\n")
+print(f"\n{green}dataset3.info():\n{reset}{dataset3.info()}\n")
+colunas_retroagir = meteoro.drop(columns = "data")
+colunas_retroagir = colunas_retroagir.columns
+print(f"\n{green}colunas_retroagir:\n{reset}{colunas_retroagir}\n")
+#sys.exit()
+"""
 for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
     dataset[f"tmin_r{r}"] = dataset["tmin"].shift(-r)
     dataset[f"temp_r{r}"] = dataset["temp"].shift(-r)
@@ -132,11 +178,10 @@ dataset.dropna(inplace = True)
 data_dataset = dataset.copy()
 dataset.set_index("data", inplace = True)
 dataset.columns.name = f"{cidade}"
-
-print(dataset)
+"""
 
 #sys.exit()
-
+"""
 ### Dividindo Dataset em Treino e Teste
 
 SEED = np.random.seed(0)
@@ -150,6 +195,7 @@ treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
                                                         random_state = SEED,
                                                         test_size = 0.2)
 """
+"""
 z = 6850
 x_ate_limite = x.iloc[:-z]
 y_ate_limite = y.iloc[:-z]
@@ -160,6 +206,7 @@ teste_x = xlimite.copy()
 treino_y = y_ate_limite.copy()
 teste_y = ylimite.copy()
 """
+"""
 sobre = RandomOverSampler(sampling_strategy = "minority")
 sub = RandomUnderSampler(sampling_strategy = "majority")
 treino_x, treino_y = sobre.fit_resample(treino_x, treino_y)
@@ -168,7 +215,7 @@ treino_x, treino_y = sub.fit_resample(treino_x, treino_y)
 explicativas = x.columns.tolist() # feature_names = explicativas
 treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-
+"""
 #print(f"""Conjunto de Treino com as Variáveis Explicativas (<{limite}):\n{treino_x}\n
 #Conjunto de Treino com as Variáveis Explicativas (>{fim}):\n{teste_x}\n 
 #Conjunto de Teste com a Variável Dependente (<{limite}):\n{treino_y}\n 
@@ -219,6 +266,7 @@ escalonador.fit(treino_x)
 treino_normal_x = escalonador.transform(treino_x)
 teste_normal_x = escalonador.transform(teste_x)
 """
+"""
 ### Exibindo Informações
 print("\n \n CONJUNTO DE DADOS PARA TREINO E TESTE \n")
 print(dataset.info())
@@ -237,12 +285,13 @@ print(f"Treinando com {len(treino_x)} elementos e testando com {len(teste_x)} el
 print(f"Formato dos dados (X) nas divisões treino: {treino_x.shape} e teste: {teste_x.shape}.")
 print(f"Formato dos dados (Y) nas divisões treino: {treino_y.shape} e teste: {teste_y.shape}.")
 print("="*80)
-
+"""
 #sys.exit()
 
 #########################################################FUNÇÕES###############################################################
 ### Definições
-def monta_dataset(cidade):
+def monta_dataset(dataset):
+	"""
 	dataset = tmin[["Data"]].copy()
 	dataset["TMIN"] = tmin[cidade].copy()
 	dataset["TMED"] = tmed[cidade].copy()
@@ -251,40 +300,22 @@ def monta_dataset(cidade):
 	dataset = dataset.merge(obitos[["Data", cidade]], how = "left", on = "Data").copy()
 	troca_nome = {f"{cidade}_x" : "PREC", f"{cidade}_y" : "obito"}
 	dataset = dataset.rename(columns = troca_nome)
-	for r in range(5, _RETROAGIR + 1):
-		dataset[f"TMIN_r{r}"] = dataset["TMIN"].shift(-r)
-		dataset[f"TMED_r{r}"] = dataset["TMED"].shift(-r)
-		dataset[f"TMAX_r{r}"] = dataset["TMAX"].shift(-r)
-		dataset[f"PREC_r{r}"] = dataset["PREC"].shift(-r)
-		dataset[f"obitos_r{r}"] = dataset["obito"].shift(-r)
-	dataset.drop(columns = ["TMIN", "TMED", "TMAX", "PREC"], inplace = True)
+	"""
+	for c in colunas_retroagir:
+		for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
+			dataset[f"{c}_r{r}"] = dataset[f"{c}"].shift(-r)
+	dataset.drop(columns = colunas_retroagir, inplace = True)
 	dataset.dropna(inplace = True)
-	dataset.set_index("Data", inplace = True)
-	dataset.columns.name = f"{cidade}"
+	dataset.set_index("data", inplace = True)
+	dataset.columns.name = f"{_CIDADE}"
+	print(f"\n{green}dataset:\n{reset}{dataset}\n")
+	print(f"\n{green}dataset.info():\n{reset}{dataset.info()}\n")
 	return dataset
 
-def treino_teste(dataset, cidade, tamanho_teste = 0.2):
+def treino_teste(str_var, dataset, cidade, tamanho_teste = 0.2):
 	SEED = np.random.seed(0)
 	x = dataset.drop(columns = "obito")
 	y = dataset["obito"]
-	if x.empty or x.isnull().all().all():
-		print(f"'X' está vazio ou contém apenas valores 'NaN! Confira o dataset do município {cidade}!")
-		print(f"{cidade} possui um conjunto com erro:\n {x}")
-		return None, None, None, None, None
-	x = x.dropna()
-	if x.empty:
-		print(f"'X' continua vazio, mesmo removendo valores 'NaN'! Confira o dataset do município {cidade}!")
-		print(f"{cidade} possui um conjunto com erro:\n {x}")
-		return None, None, None, None, None
-	if y.empty or y.isnull().all().all():
-		print(f"'Y' está vazio ou contém apenas valores 'NaN! Confira o dataset do município {cidade}!")
-		print(f"{cidade} possui um conjunto com erro:\n {y}")
-		return None, None, None, None, None
-	y = y.dropna()
-	if y.empty:
-		print(f"'Y' continua vazio, mesmo removendo valores 'NaN'! Confira o dataset do município {cidade}!")
-		print(f"{cidade} possui um conjunto com erro:\n {y}")
-		return None, None, None, None, None
 	x_array = x.to_numpy()
 	x_array = x_array.reshape(x_array.shape[0], -1)
 	x_array = x.to_numpy().astype(int)
@@ -528,7 +559,7 @@ def salva_modelo(string_modelo, modeloNN = None):
 		joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
 
 ######################################################RANDOM_FOREST############################################################
-
+"""
 ### Instanciando e Treinando Modelo Regressor Random Forest
 modeloRF = RandomForestRegressor(n_estimators = 100, random_state = SEED) #n_estimators = número de árvores
 modeloRF.fit(treino_x_explicado, treino_y)
@@ -554,14 +585,19 @@ metricas("RF")
 importancias, indices, variaveis_importantes =  metricas_importancias(modeloRF, explicativas)
 unica_arvore, relatorio_decisao = caminho_decisao(x, modeloRF, explicativas)
 sys.exit()
-
+"""
 #########################################################AUTOMATIZANDO###############################################################
-if _AUTOMATIZAR == "True":
-    for cidade in cidades:
-        dataset = monta_dataset(cidade)
-        treino_x, teste_x, treino_y, teste_y, treino_x_explicado = treino_teste(dataset, cidade)
-        modelo, y_previsto, previsoes = RF_modela_treina_preve(treino_x_explicado, treino_y, teste_x, SEED)
-        EQM, RQ_EQM, R_2 = RF_previsao_metricas(dataset, previsoes, 5, teste_y, y_previsto)
-        salva_modeloRF(modelo, cidade)
+if _AUTOMATIZAR == True:
+	for cidade in cidades:
+		dataset1 = monta_dataset(dataset1)
+		dataset2 = monta_dataset(dataset2)
+		dataset3 = monta_dataset(dataset3)
+		lista_datasets = [dataset1, dataset2, dataset3]
+		sys.exit()
+		for idx, dataset in enumerate(lista_datasets):
+			treino_x, teste_x, treino_y, teste_y, treino_x_explicado = treino_teste(idx, dataset, cidade)
+		modelo, y_previsto, previsoes = RF_modela_treina_preve(treino_x_explicado, treino_y, teste_x, SEED)
+		EQM, RQ_EQM, R_2 = RF_previsao_metricas(dataset, previsoes, 5, teste_y, y_previsto)
+		salva_modeloRF(modelo, cidade)
 ######################################################################################################################################
 
