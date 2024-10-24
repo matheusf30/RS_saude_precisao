@@ -52,7 +52,7 @@ _JANELA_MM = 0 # Média Móvel
 _K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
-cidades = "Porto Alegre"
+cidades = ["Porto Alegre"]
 _CIDADE = cidade.upper()
 troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
          'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
@@ -336,7 +336,7 @@ def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
 	explicativas = x.columns.tolist()
 	treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 	treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-	return x_array, y_array, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, SEED
+	return x_array, y_array, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, explicativas, SEED
 
 def escalona(treino_x, teste_x):
 	escalonador = StandardScaler()
@@ -409,17 +409,23 @@ def lista_previsao(previsao, n, string_modelo):
 	print("\n".join(lista_op))
 	print("="*80)
 
-def grafico_previsao(previsao, teste, string_modelo):
-	if string_modelo not in ["RF", "NN"]:
-		print("!!"*80)
-		print("\n   MODELO NÃO RECONHECIDO\n   TENTE 'RF' PARA RANDOM FOREST\n   OU 'NN' PARA REDE NEURAL\n")
-		print("!!"*80)
-		sys.exit()
+def grafico_previsao(n_dataset, dataset, previsao, R_2):
 	# Gráfico de Comparação entre Observação e Previsão dos Modelos
-	nome_modelo = "Random Forest" if string_modelo == "RF" else "Rede Neural"
+	nome_modelo = "Random Forest"
 	final = pd.DataFrame()
-	final["Data"] = data_dataset["data"]
-	final["obito"] = data_dataset["obito"]
+	dataset.reset_index(inplace = True)
+	final["Data"] = dataset["data"]
+	if n_dataset == 1:
+		final["obito"] = dataset["obitos"]
+		nome_arquivo = "totais"
+	elif n_dataset == 2:
+		final["obito"] = dataset["totalp75"]
+		nome_arquivo = "totalp75"
+	elif n_dataset == 3:
+		final["obito"] = dataset["infarto_agudo_miocardio"]
+		nome_arquivo = "I219"
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
 	final.reset_index(inplace = True)
 	final.drop(columns = "index", inplace = True)
 	print(final)
@@ -427,11 +433,7 @@ def grafico_previsao(previsao, teste, string_modelo):
 	final.drop([d for d in range(_RETROAGIR)], axis=0, inplace = True)
 	final.drop(final.index[-_RETROAGIR:], axis=0, inplace = True)
 	print(final)
-	previsoes = previsao if string_modelo == "RF" else [np.argmax(p) for p in previsao]
-	"""
-	lista_previsao = [previsoes[v] for v in range(len(previsoes))]
-	final["Previstos"] = lista_previsao
-	"""
+	previsoes = previsao
 	previsoes = previsoes[:len(final)]
 	final["Previstos"] = previsoes
 	final["Data"] = pd.to_datetime(final["Data"])
@@ -442,9 +444,9 @@ def grafico_previsao(previsao, teste, string_modelo):
 		     	color = "darkblue", linewidth = 1, label = "Observado")
 	sns.lineplot(x = final["Data"], y = final["Previstos"],
 		     	color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
-	plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
+	plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	plt.xlabel("Série Histórica (Observação Diária)")
-	plt.ylabel("Número de Óbitos Cardiovasculares.")
+	plt.ylabel(f"Número de Óbitos Cardiovasculares ({nome_arquivo})")
 	troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
 	   'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
 	 	'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
@@ -454,11 +456,12 @@ def grafico_previsao(previsao, teste, string_modelo):
 	_cidade = cidade
 	for velho, novo in troca.items():
 		_cidade = _cidade.replace(velho, novo)
-	if _SALVAR == "True":
-		plt.savefig(f'{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
-		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
-	if _VISUALIZAR == "True":	
-		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
+	nome_arquivo = f"modelo_RF_{nome_arquivo}_{_cidade}.pdf"
+	if _SALVAR == True:
+		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+	if _VISUALIZAR == True:	
+		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 		plt.show()
 
 def metricas(string_modelo, modeloNN = None):
@@ -484,7 +487,7 @@ def metricas(string_modelo, modeloNN = None):
 				\n Raiz Quadrada do Erro Quadrático Médio: {RQ_EQM_RF}
 				""")
 
-def metricas_importancias(modeloRF, explicativas):
+def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 	importancias = modeloRF.feature_importances_
 	importancias = importancias.round(4)
 	indices = np.argsort(importancias)[::-1]
@@ -497,19 +500,28 @@ def metricas_importancias(modeloRF, explicativas):
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_impureza = importancia_impureza.sort_values(ascending = False)
 	importancia_impureza[:10].plot.bar(yerr = std[:10], ax = ax)
-	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
+	if n_dataset == 1:
+		nome_arquivo = "totais"
+	elif n_dataset == 2:
+		nome_arquivo = "totalp75"
+	elif n_dataset == 3:
+		nome_arquivo = "I219"
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Impureza Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
+	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_impureza[:10].values):
 		ax.text(i + 0.01, v, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
-	if _SALVAR == "True":
-		plt.savefig(f'{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
-		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
-	if _VISUALIZAR == "True":
-		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}importancias_modelo_RF_obitos_{_cidade}.pdf{ansi['reset']}")
+	nome_arquivo = f"importancias_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
+	if _SALVAR == True:
+		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+	if _VISUALIZAR == True:
+		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 		plt.show()
 	#2 Permutações
 	n_permuta = 10
@@ -519,19 +531,28 @@ def metricas_importancias(modeloRF, explicativas):
 	std = resultado_permuta.importances_std
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_permuta[:10].plot.bar(yerr = std[:10], ax = ax)
-	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade}, RIO GRANDE DO SUL.\n")
+	if n_dataset == 1:
+		nome_arquivo = f"totais"
+	elif n_dataset == 2:
+		nome_arquivo = f"totalp75"
+	elif n_dataset == 3:
+		nome_arquivo = f"I219"
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Acurácia Média")
-	ax.set_xlabel("Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares")
+	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
 	plt.xticks(rotation = 60)
 	for i, v in enumerate(importancia_permuta[:10].values):
 		ax.text(i + 0.01, v, f"{v.round(4)}", color = "black", ha = "left")
 	fig.tight_layout()
-	if _SALVAR == "True":
-		plt.savefig(f'{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf', format = "pdf", dpi = 1200)
-		print(f"{ansi['green']}\nSALVANDO:\n{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf{ansi['reset']}")
-	if _VISUALIZAR == "True":
-		print(f"{ansi['green']}\nVISUALIZANDO:\n{caminho_resultados}importancias_permuta_RF_obitos_{_cidade}.pdf{ansi['reset']}")
+	nome_arquivo = f"importancias_permuta_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
+	if _SALVAR == True:
+		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+	if _VISUALIZAR == True:
+		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 		plt.show()
 	print(f"\nVARIÁVEIS IMPORTANTES:\n{importancia_impureza}\n")
 	print(f"\nVARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO:\n{importancia_permuta}")
@@ -556,13 +577,13 @@ def caminho_decisao(x, modelo, explicativas):
 		plot_tree(unica_arvore, feature_names = explicativas, filled = True, rounded = True, fontsize = 6,
 					proportion = True, node_ids = True, precision = 0, impurity = False)#, max_depth = 6) # impureza = ErroQuadrático
 		ax.set_facecolor("honeydew")
-		if _SALVAR == "True":
+		if _SALVAR == True:
 			plt.savefig(f'{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.pdf', format = "pdf", dpi = 1200)
 			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.pdf{ansi['reset']}\n")
 			with open(f'{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.txt', 'w') as file:
 				file.write(relatorio_decisao)
 			print(f"\n{ansi['green']}ARQUIVO SALVO COM SUCESSO\n\n{caminho_resultados}arvore_decisao_modelo_RF_{_cidade}.txt{ansi['reset']}\n")
-		if _VISUALIZAR == "True":
+		if _VISUALIZAR == True:
 			print("\n\n{ansi['green']}RELATÓRIO DA ÁRVORE DE DECISÃO\n\n{cidade}\n\n{cidade}{ansi['reset']}\n\n", relatorio_decisao)
 			plt.show()
 		#print("\n\nCAMINHO DE DECISÃO\n\n", caminho_denso)
@@ -617,16 +638,22 @@ if _AUTOMATIZAR == True:
 		dataset1 = monta_dataset(dataset1)
 		dataset2 = monta_dataset(dataset2)
 		dataset3 = monta_dataset(dataset3)
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, SEED = treino_teste(1, dataset1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, SEED = treino_teste(2, dataset2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, SEED = treino_teste(3, dataset3, cidade)
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
 		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
 		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
 		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
 		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset1, previsoes1, 5, teste_y1, y_previsto1)
 		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset2, previsoes2, 5, teste_y2, y_previsto2)		
 		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset3, previsoes3, 5, teste_y3, y_previsto3)
-		sys.exit()
+		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
+		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
+		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		grafico_previsao(1, dataset1, previsoes1, R_2_1)
+		grafico_previsao(2, dataset2, previsoes2, R_2_2)
+		grafico_previsao(3, dataset3, previsoes3, R_2_3)
+		#sys.exit()
 		salva_modeloRF(1, modelo1, cidade)
 		salva_modeloRF(2, modelo2, cidade)
 		salva_modeloRF(3, modelo3, cidade)
