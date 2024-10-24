@@ -312,10 +312,19 @@ def monta_dataset(dataset):
 	print(f"\n{green}dataset.info():\n{reset}{dataset.info()}\n")
 	return dataset
 
-def treino_teste(str_var, dataset, cidade, tamanho_teste = 0.2):
+def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
 	SEED = np.random.seed(0)
-	x = dataset.drop(columns = "obito")
-	y = dataset["obito"]
+	if n_dataset == 1:
+		x = dataset.drop(columns = "obitos")
+		y = dataset["obitos"]
+	elif n_dataset == 2:
+		x = dataset.drop(columns = "totalp75")
+		y = dataset["totalp75"]
+	elif n_dataset == 3:
+		x = dataset.drop(columns = "infarto_agudo_miocardio")
+		y = dataset["infarto_agudo_miocardio"]
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
 	x_array = x.to_numpy()
 	x_array = x_array.reshape(x_array.shape[0], -1)
 	x_array = x.to_numpy().astype(int)
@@ -327,7 +336,7 @@ def treino_teste(str_var, dataset, cidade, tamanho_teste = 0.2):
 	explicativas = x.columns.tolist()
 	treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
 	treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-	return treino_x, teste_x, treino_y, teste_y, treino_x_explicado
+	return x_array, y_array, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, SEED
 
 def escalona(treino_x, teste_x):
 	escalonador = StandardScaler()
@@ -336,19 +345,26 @@ def escalona(treino_x, teste_x):
 	teste_normal_x = escalonador.transform(teste_x)
 	return treino_normal_x, teste_normal_x
 
-def RF_modela_treina_preve(treino_x, treino_y, teste_x, SEED):
+def RF_modela_treina_preve(x, treino_x_explicado, treino_y, teste_x, SEED):
 	modelo = RandomForestRegressor(n_estimators = 100, random_state = SEED)
 	modelo.fit(treino_x_explicado, treino_y)
 	y_previsto = modelo.predict(teste_x)
-	previsoes = modeloRF.predict(x)
+	previsoes = modelo.predict(x)
 	previsoes = [int(p) for p in previsoes]
 	return modelo, y_previsto, previsoes
 
-def RF_previsao_metricas(dataset, previsoes, n, teste_y, y_previsto):
+def RF_previsao_metricas(n_dataset, dataset, previsoes, n, teste_y, y_previsto):
 	nome_modelo = "Random Forest"
 	print("="*80)
 	print(f"\n{nome_modelo.upper()} - {cidade}\n")
-	lista_op = [f"obitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+	if n_dataset == 1:
+		lista_op = [f"obitos: {dataset['obitos'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+	elif n_dataset == 2:
+		lista_op = [f"totalp75: {dataset['totalp75'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+	elif n_dataset == 3:
+		lista_op = [f"Infarto Agudo: {dataset['infarto_agudo_miocardio'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
 	print("\n".join(lista_op))
 	print("~"*80)
 	EQM = mean_squared_error(teste_y, y_previsto)
@@ -363,12 +379,21 @@ def RF_previsao_metricas(dataset, previsoes, n, teste_y, y_previsto):
 	print("="*80)
 	return EQM, RQ_EQM, R_2
 
-def salva_modeloRF(modelo, cidade):
+def salva_modeloRF(n_dataset, modelo, cidade):
 	if not os.path.exists(caminho_modelos):
 		os.makedirs(caminho_modelos)
-	joblib.dump(modelo, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
-	print(f"\nMODELO RANDOM FOREST DE {cidade} SALVO!\n\nCaminho e Nome:\n {caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
-	print("\n" + "="*80 + "\n")
+	if n_dataset == 1:
+		nome_arquivo = f"RF_obitos_r{_RETROAGIR}_{_cidade}.h5"
+	elif n_dataset == 2:
+		nome_arquivo = f"RF_totalp75_r{_RETROAGIR}_{_cidade}.h5"
+	elif n_dataset == 3:
+		nome_arquivo = f"RF_I219_r{_RETROAGIR}_{_cidade}.h5"
+	else:
+		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	joblib.dump(modelo, f"{caminho_modelos}{nome_arquivo}")
+	print(f"\n{green}MODELO RANDOM FOREST DE {cidade} SALVO!\n{reset}")
+	print(f"\n{green}Caminho e Nome:\n{bold} {caminho_modelos}{nome_arquivo}\n{reset}")
+	print("\n" + f"{green}={cyan}={reset}"*80 + "\n")
 
 def lista_previsao(previsao, n, string_modelo):
 	if string_modelo not in ["RF", "NN"]:
@@ -592,12 +617,18 @@ if _AUTOMATIZAR == True:
 		dataset1 = monta_dataset(dataset1)
 		dataset2 = monta_dataset(dataset2)
 		dataset3 = monta_dataset(dataset3)
-		lista_datasets = [dataset1, dataset2, dataset3]
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, SEED = treino_teste(1, dataset1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, SEED = treino_teste(2, dataset2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, SEED = treino_teste(3, dataset3, cidade)
+		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
+		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
+		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
+		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset1, previsoes1, 5, teste_y1, y_previsto1)
+		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset2, previsoes2, 5, teste_y2, y_previsto2)		
+		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset3, previsoes3, 5, teste_y3, y_previsto3)
 		sys.exit()
-		for idx, dataset in enumerate(lista_datasets):
-			treino_x, teste_x, treino_y, teste_y, treino_x_explicado = treino_teste(idx, dataset, cidade)
-		modelo, y_previsto, previsoes = RF_modela_treina_preve(treino_x_explicado, treino_y, teste_x, SEED)
-		EQM, RQ_EQM, R_2 = RF_previsao_metricas(dataset, previsoes, 5, teste_y, y_previsto)
-		salva_modeloRF(modelo, cidade)
+		salva_modeloRF(1, modelo1, cidade)
+		salva_modeloRF(2, modelo2, cidade)
+		salva_modeloRF(3, modelo3, cidade)
 ######################################################################################################################################
 
