@@ -317,7 +317,7 @@ def seleciona_periodo(dataset, str_periodo):
 	if str_periodo == "quente":
 		dataset_periodo = dataset_periodo[(dataset_periodo.index.month >= 10) & (dataset_periodo.index.month <= 3)]
 	elif str_periodo == "frio":
-		dataset_periodo = dataset_periodo[(dataset_periodo.index.month >= 4) & (dataset_periodo.index.month <= 9)]
+		dataset_periodo = dataset_periodo[(dataset_periodo.index.month >= 5) & (dataset_periodo.index.month <= 9)]
 	#dataset_periodo.reset_index(inplace = True)
 	#dataset_periodo.drop(columns = "dia", inplace = True)
 	#dataset_periodo.set_index("data", inplace = True)
