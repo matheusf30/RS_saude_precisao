@@ -103,6 +103,8 @@ ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf - 95.)) / 17)
 ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
 #meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
 #meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
+meteoro["indice_amplitude_up"] = meteoro["amplitude_t"] ** 2
+meteoro["indice_amplitude_down"] = (1 / meteoro["amplitude_t"]) ** 2
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
 #sys.exit()
 #
