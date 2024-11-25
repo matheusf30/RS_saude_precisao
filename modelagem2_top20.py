@@ -135,8 +135,8 @@ for sexo, letra in troca_sexo.items():
 	obito_agrupado_top20 = obito_agrupado_top20.replace(sexo, letra)
 obito_agrupado_top20["paciente"] = obito_agrupado_top20[["sexo", "idade"]].astype(str).agg("".join, axis = 1)
 obito_agrupado_top20.drop(columns = ["sexo", "idade"], inplace = True)
-#obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["paciente"],
-#														values = "obito", aggfunc = "sum", fill_value = 0)
+obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["paciente"],
+														values = "obito", aggfunc = "sum", fill_value = 0)
 # Percentil 75
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
@@ -145,7 +145,7 @@ print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
 print(f"\n{green}p75:\n{reset}{p75}\n")
 print(f"\n{green}obito_agrupado:\n{reset}{obito_agrupado}\n")
 print(f"\n{green}obito_agrupado_top20:\n{reset}{obito_agrupado_top20}\n")
-sys.exit()
+#sys.exit()
 
 #Implementar com sexo/idade/diferença²/anomaliaestacionária.
 
@@ -185,6 +185,7 @@ print(f"\n{green}dataset3.info():\n{reset}{dataset3.info()}\n")
 colunas_retroagir = meteoro.drop(columns = "data")
 colunas_retroagir = colunas_retroagir.columns
 print(f"\n{green}colunas_retroagir:\n{reset}{colunas_retroagir}\n")
+sys.exit()
 dataset1.to_csv(f"{caminho_dados}{_cidade}_dataset1.csv", index = False)
 dataset2.to_csv(f"{caminho_dados}{_cidade}_dataset2.csv", index = False)
 dataset3.to_csv(f"{caminho_dados}{_cidade}_dataset3.csv", index = False)
