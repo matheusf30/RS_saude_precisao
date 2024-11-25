@@ -119,8 +119,17 @@ obito_total = bio.groupby(by = ["data"])["obito"].sum()
 obito_total = obito_total.reset_index()
 obito_total.columns = ["data", "obitos"]
 obito_total.to_csv(f"{caminho_dados}obito_total_{_cidade}.csv", index = False)
-obito_agrupado = bio.groupby(["obito", "sexo", "idade"])
-obito_agrupado = obito_agrupado.size().reset_index(name = "count")
+obito_agrupado = bio.groupby(["data", "sexo", "idade"]).size()
+obito_agrupado = obito_agrupado.to_frame(name = "obito")
+obito_agrupado = obito_agrupado.reset_index().set_index("data")
+top20 = bio["causa"].value_counts().head(20)
+top20 = top20.index.tolist()
+print(f"\n{green}top20:\n{reset}{top20}\n")
+biotop20 = bio[bio["causa"].isin(top20)]
+print(f"\n{green}biotop20:\n{reset}{biotop20}\n")
+obito_agrupado_top20 = biotop20.groupby(["data", "sexo", "idade"]).size()
+obito_agrupado_top20 = obito_agrupado_top20.to_frame(name = "obito")
+obito_agrupado_top20 = obito_agrupado_top20.reset_index().set_index("data")
 # Percentil 75
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
@@ -128,6 +137,7 @@ print(f"\n{green}meteoro.info():\n{reset}{meteoro.info()}\n")
 print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
 print(f"\n{green}p75:\n{reset}{p75}\n")
 print(f"\n{green}obito_agrupado:\n{reset}{obito_agrupado}\n")
+print(f"\n{green}obito_agrupado_top20:\n{reset}{obito_agrupado_top20}\n")
 sys.exit()
 
 #Implementar com sexo/idade/diferença²/anomaliaestacionária.
