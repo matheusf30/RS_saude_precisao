@@ -81,6 +81,7 @@ meteoro = "meteoro_porto_alegre.csv"
 bio = "obito_cardiovasc_total_poa_96-22.csv"
 p75 = "serie_IAM3_porto_alegre.csv"
 
+
 ### Abrindo Arquivo e Pré-processamento
 # Meteoro
 meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
@@ -102,6 +103,8 @@ ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf - 95.)) / 17)
 ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
 #meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
 #meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
+print(f"\n{green}meteoro\n{reset}{meteoro}\n")
+sys.exit()
 #
 # Saúde
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
