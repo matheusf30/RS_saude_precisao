@@ -104,7 +104,7 @@ ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
 #meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
 #meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
-sys.exit()
+#sys.exit()
 #
 # Saúde
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
@@ -114,17 +114,23 @@ bio.reset_index(inplace = True)
 bio["obito"] = np.ones(len(bio)).astype(int)
 bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace = True)
 bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
+print(f"\n{green}bio:\n{reset}{bio}\n")
 obito_total = bio.groupby(by = ["data"])["obito"].sum()
 obito_total = obito_total.reset_index()
 obito_total.columns = ["data", "obitos"]
 obito_total.to_csv(f"{caminho_dados}obito_total_{_cidade}.csv", index = False)
+obito_agrupado = bio.groupby(["obito", "sexo", "idade"])
+obito_agrupado = obito_agrupado.size().reset_index(name = "count")
 # Percentil 75
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
 print(f"\n{green}meteoro.info():\n{reset}{meteoro.info()}\n")
 print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
 print(f"\n{green}p75:\n{reset}{p75}\n")
-#sys.exit()
+print(f"\n{green}obito_agrupado:\n{reset}{obito_agrupado}\n")
+sys.exit()
+
+#Implementar com sexo/idade/diferença²/anomaliaestacionária.
 
 ### Montando Datasets
 x1 = obito_total[["data","obitos"]]
