@@ -133,7 +133,9 @@ obito_agrupado_top20 = obito_agrupado_top20.reset_index().set_index("data")
 troca_sexo = {"Feminino" : "F", "Masculino" : "M"}
 for sexo, letra in troca_sexo.items():
 	obito_agrupado_top20 = obito_agrupado_top20.replace(sexo, letra)
-#obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["sexo"],
+obito_agrupado_top20["paciente"] = obito_agrupado_top20[["sexo", "idade"]].astype(str).agg("".join, axis = 1)
+obito_agrupado_top20.drop(columns = ["sexo", "idade"], inplace = True)
+#obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["paciente"],
 #														values = "obito", aggfunc = "sum", fill_value = 0)
 # Percentil 75
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
