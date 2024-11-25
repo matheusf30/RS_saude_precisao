@@ -130,6 +130,8 @@ print(f"\n{green}biotop20:\n{reset}{biotop20}\n")
 obito_agrupado_top20 = biotop20.groupby(["data", "sexo", "idade"]).size()
 obito_agrupado_top20 = obito_agrupado_top20.to_frame(name = "obito")
 obito_agrupado_top20 = obito_agrupado_top20.reset_index().set_index("data")
+obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["sexo"],
+														values = "obito", aggfunc = "sum", fill_value = 0)
 # Percentil 75
 p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
 print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
