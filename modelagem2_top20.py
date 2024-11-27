@@ -664,7 +664,12 @@ sys.exit()
 #########################################################AUTOMATIZANDO###############################################################
 if _AUTOMATIZAR == True:
 	for cidade in cidades:
-		
+		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude/"
+		if not os.path.exists(caminho_resultados):
+			os.makedirs(caminho_resultados)
+		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
+		if not os.path.exists(caminho_modelos):
+			os.makedirs(caminho_modelos)		
 		dataset_inicio1 = dataset_original1.copy()
 		dataset_inicio2 = dataset_original2.copy()
 		dataset_inicio3 = dataset_original3.copy()
@@ -738,10 +743,10 @@ if _AUTOMATIZAR == True:
 		salva_modeloRF(2, modelo2, cidade)
 		salva_modeloRF(3, modelo3, cidade)
 		"""
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude/"
+		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude_pfrio/"
 		if not os.path.exists(caminho_resultados):
 			os.makedirs(caminho_resultados)
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
+		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude_pfrio/"
 		if not os.path.exists(caminho_modelos):
 			os.makedirs(caminho_modelos)
 		dataset_inicio1 = dataset_original1.copy()
