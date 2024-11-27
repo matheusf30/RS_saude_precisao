@@ -469,7 +469,7 @@ def grafico_previsao(n_dataset, dataset, previsao, R_2):
 	print(final)
 	print("="*80)
 	plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
-	sns.lineplot(x = final["Damodelagem_top20.pyta"], y = final["obito"], # linestyle = "--" linestyle = "-."
+	sns.lineplot(x = final["Data"], y = final["obito"], # linestyle = "--" linestyle = "-."
 		     	color = "darkblue", linewidth = 1, label = "Observado")
 	sns.lineplot(x = final["Data"], y = final["Previstos"],
 		     	color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
