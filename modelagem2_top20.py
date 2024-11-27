@@ -187,11 +187,12 @@ print(f"\n{green}dataset3.info():\n{reset}{dataset3.info()}\n")
 colunas_retroagir = meteoro.drop(columns = "data")
 colunas_retroagir = colunas_retroagir.columns
 print(f"\n{green}colunas_retroagir:\n{reset}{colunas_retroagir}\n")
-sys.exit()
+#sys.exit()
+"""
 dataset1.to_csv(f"{caminho_dados}{_cidade}_dataset1.csv", index = False)
 dataset2.to_csv(f"{caminho_dados}{_cidade}_dataset2.csv", index = False)
 dataset3.to_csv(f"{caminho_dados}{_cidade}_dataset3.csv", index = False)
-"""
+
 for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
     dataset[f"tmin_r{r}"] = dataset["tmin"].shift(-r)
     dataset[f"temp_r{r}"] = dataset["temp"].shift(-r)
