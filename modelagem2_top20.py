@@ -738,10 +738,10 @@ if _AUTOMATIZAR == True:
 		salva_modeloRF(2, modelo2, cidade)
 		salva_modeloRF(3, modelo3, cidade)
 		"""
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/periodo_frio/"
+		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude/"
 		if not os.path.exists(caminho_resultados):
 			os.makedirs(caminho_resultados)
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/periodo_frio/"
+		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
 		if not os.path.exists(caminho_modelos):
 			os.makedirs(caminho_modelos)
 		dataset_inicio1 = dataset_original1.copy()
