@@ -11,6 +11,7 @@ import os
 import sys
 import joblib
 # Pré-Processamento e Validações
+import pymannkendall as mk
 from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
@@ -103,9 +104,61 @@ ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf - 95.)) / 17)
 ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
 #meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
 #meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
+print(f"\n{green}meteoro\n{reset}{meteoro}\n")
 meteoro["indice_amplitude_up"] = meteoro["amplitude_t"] ** 2
 meteoro["indice_amplitude_down"] = (1 / meteoro["amplitude_t"]) ** 2
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
+sazonal = meteoro.copy()
+sazonal["data"] = pd.to_datetime(sazonal["data"]).dt.date
+sazonal = sazonal.astype({"data": "datetime64[ns]"})
+sazonal["dia"] = sazonal["data"].dt.dayofyear
+print(f"\n{green}sazonal\n{reset}{sazonal}\n")
+colunas_sazonal = sazonal.drop(columns = "data")
+colunas = colunas_sazonal.columns
+media_dia = sazonal.groupby("dia")[colunas].mean().round(2)
+#media_dia.reset_index(inplace = True)
+print(f"\n{green}media_dia\n{reset}{media_dia}\n{green}media_dia.index\n{reset}{media_dia.index}")
+print(f"\n{green}sazonal\n{reset}{sazonal}\n")
+componente_sazonal = sazonal.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
+sem_sazonal = pd.DataFrame(index = sazonal.index)
+dias = componente_sazonal["dia"]
+componente_sazonal.drop(columns = "dia", inplace = True)
+print(f"{green}componente_sazonal\n{reset}{componente_sazonal}")
+for coluna in colunas:
+		if coluna in componente_sazonal.columns:
+			media_coluna = f"{coluna}_media"
+			if media_coluna in componente_sazonal.columns:
+				sem_sazonal[coluna] = sazonal[coluna] - componente_sazonal[media_coluna]
+			else:
+				print(f"{red}Coluna {media_coluna} não encontrada no componente sazonal!{reset}")
+		else:
+			print(f"{red}Coluna {coluna} não encontrada no csv!{reset}")
+sem_sazonal["dia"] = dias
+sem_sazonal.dropna(inplace = True)
+print(f"\n{green}sem_sazonal\n{reset}{sem_sazonal}\n")
+print(f"\n{green}sem_sazonal.columns\n{reset}{sem_sazonal.columns}\n")
+
+colunas_anomalia = sem_sazonal.drop(columns = ["dia"])
+sem_sazonal.dropna(axis = 1, inplace = True)
+colunas = colunas_anomalia.columns
+anomalia_estacionaria = pd.DataFrame()
+anomalia_estacionaria["dia"] = dias
+for c in colunas:
+	if len(sem_sazonal[c]) > 1:
+		tendencia = mk.original_test(sem_sazonal[c])
+		print(f"{cyan}\nVARIÁVEL\n{c.upper()}{reset}\n")
+		print(f"\n{green}sem_sazonal[c]\n{reset}{sem_sazonal[c]}\n")
+		print(f"\n{green}tendencia\n{reset}{tendencia}\n")
+		sem_tendencia = sem_sazonal[c] -(tendencia.slope + tendencia.intercept)# * len(sem_sazonal[c]))
+		anomalia_estacionaria[c] = sem_tendencia
+	else:
+		print(f"{red}Coluna Faltante: {c}\nINSUFICIÊNCIA DE DADOS!\n(Tamanho: {len(sem_sazonal[c])}).{reset}")
+print(f"\n{green}anomalia_estacionaria\n{reset}{anomalia_estacionaria}\n")
+meteoro["dia"] = dias
+meteoro = meteoro.merge(anomalia_estacionaria, left_on = "dia", how = "left", suffixes = ("", "_aest"), right_index = True)
+meteoro.drop(columns = "dia", inplace = True)
+print(f"\n{green}meteoro\n{reset}{meteoro}\n")
+
 #sys.exit()
 #
 # Saúde
@@ -665,10 +718,10 @@ sys.exit()
 #########################################################AUTOMATIZANDO###############################################################
 if _AUTOMATIZAR == True:
 	for cidade in cidades:
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude/"
+		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/anomalia_estacionaria/"
 		if not os.path.exists(caminho_resultados):
 			os.makedirs(caminho_resultados)
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
+		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/anomalia_estacionaria/"
 		if not os.path.exists(caminho_modelos):
 			os.makedirs(caminho_modelos)		
 		dataset_inicio1 = dataset_original1.copy()
