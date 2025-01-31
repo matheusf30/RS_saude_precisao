@@ -48,22 +48,21 @@ ansi = {"bold" : "\033[1m", "red" : "\033[91m",
         "cyan" : "\033[36m", "white" : "\033[37m", "reset" : "\033[0m"}
 #################################################################################
 
-match _LOCAL:
-	case "GH":
-		caminho_dados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/dados/"
-		caminho_resultados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/resultados/porto_alegre/"
-		caminho_modelos = "https://github.com/matheusf30/RS_saude_precisao/tree/main/modelos/"
-	case "SIFAPSC":
-		caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
-	case "CLUSTER":
-		caminho_dados = "..."
-	case "CASA":
-		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
-		caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
-	case _:
-		print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
+if _LOCAL == "GH":
+	caminho_dados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/dados/"
+	caminho_resultados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/resultados/porto_alegre/"
+	caminho_modelos = "https://github.com/matheusf30/RS_saude_precisao/tree/main/modelos/"
+elif _LOCAL ==  "SIFAPSC":
+	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
+	caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+	caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
+elif _LOCAL == "CLUSTER":
+	caminho_dados = "..."
+elif _LOCAL == "CASA":
+	caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/"
+	caminho_dados = "/home/mfsouza90/Documents/git_matheusf30/dados_dengue/modelos/"
+else:
+	print("CAMINHO NÃO RECONHECIDO! VERIFICAR LOCAL!")
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
@@ -199,6 +198,8 @@ plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
+	#media_dia.to_csv(f"{caminho_dados}climatologia.csv", index = True)
+	#print(f"\n{ansi['green']}SALVO COM SUCESSO!\nCLIMATOLOGIA.csv\n{ansi['reset']}")
 	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
 	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
@@ -237,6 +238,8 @@ plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
+	#sem_sazonal.to_csv(f"{caminho_dados}anomalia.csv", index = True)
+	#print(f"\n{ansi['green']}SALVO COM SUCESSO!\nANOMALIA.csv\n{ansi['reset']}")
 	#plt.savefig(f'{caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf',
 	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
