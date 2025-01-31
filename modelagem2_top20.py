@@ -2,6 +2,7 @@
 # Básicas e Gráficas
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.ndimage import gaussian_filter1d
@@ -18,7 +19,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, accuracy_score, r2_score#, RocCurveDisplay
 from sklearn.inspection import permutation_importance
+matplotlib.use("Agg")
 import shap
+print(f"shap.__version__ = {shap.__version__}") #0.46.0
 # Modelos e Visualizações
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
@@ -532,6 +535,7 @@ def grafico_previsao(n_dataset, dataset, previsao, R_2):
 	previsoes = previsoes[:len(final)]
 	final["Previstos"] = previsoes
 	final["Data"] = pd.to_datetime(final["Data"])
+	final.replace([np.inf, -np.inf], np.nan, inplace=True)
 	print(final)
 	print("="*80)
 	plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
@@ -656,7 +660,7 @@ def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	expl_shap = shap.Explainer(modelo, treino_x)
 	valor_shap = expl_shap(teste_x)
-	plt.figure(figsize = (10, 6), layout = "constrained", frameon = False)
+	plt.figure(figsize = (10, 6)).set_layout_engine(None)#, layout = "constrained", frameon = False).set_layout_engine(None)
 	if n_dataset == 1:
 		nome_arquivo = "totais"
 	elif n_dataset == 2:
@@ -670,7 +674,8 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	ax.set_ylabel("Valor SHAP")
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
-	shap.summary_plot(valor_shap, teste_x)
+	plt.rcParams.update({"figure.autolayout" : False})
+	shap.summary_plot(valor_shap, teste_x)#, legacy_colorbar = True)
 	nome_arquivo = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
 	if _SALVAR == True:
 		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
@@ -787,9 +792,11 @@ if _AUTOMATIZAR == True:
 		metrica_shap(1, modelo1, treino_x1, teste_x1)
 		metrica_shap(2, modelo2, treino_x2, teste_x2)
 		metrica_shap(3, modelo3, treino_x3, teste_x3)
+		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
 		grafico_previsao(3, dataset3, previsoes3, R_2_3)
+		"""
 		#sys.exit()
 		salva_modeloRF(1, modelo1, cidade)
 		salva_modeloRF(2, modelo2, cidade)
@@ -874,9 +881,11 @@ if _AUTOMATIZAR == True:
 		metrica_shap(1, modelo1, treino_x1, teste_x1)
 		metrica_shap(2, modelo2, treino_x2, teste_x2)
 		metrica_shap(3, modelo3, treino_x3, teste_x3)
+		"""
 		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
 		grafico_previsao(3, dataset_f3, previsoes3, R_2_3)
+		"""
 		#sys.exit()
 		salva_modeloRF(1, modelo1, cidade)
 		salva_modeloRF(2, modelo2, cidade)
@@ -968,9 +977,11 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
 		grafico_previsao(3, dataset3, previsoes3, R_2_3)
+		"""
 		#sys.exit()
 		salva_modeloRF(1, modelo1, cidade)
 		salva_modeloRF(2, modelo2, cidade)
@@ -1050,9 +1061,11 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		"""
 		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
 		grafico_previsao(3, dataset_f3, previsoes3, R_2_3)
+		"""
 		#sys.exit()
 		salva_modeloRF(1, modelo1, cidade)
 		salva_modeloRF(2, modelo2, cidade)
