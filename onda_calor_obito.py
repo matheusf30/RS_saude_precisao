@@ -124,6 +124,7 @@ if not ondadecalor.empty:
 	print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n")
 else:
 	print(f"\n{red}Nenhuma Onda de Calor Detectada!\n{reset}")
+onda_calor["acima"] = onda_calor["tmax"] - onda_calor["tmax_clima"]
 
 ### Concatenando Óbitos
 #onda_calor["obito"] = onda_calor["data"].map(bio["obitos"])
