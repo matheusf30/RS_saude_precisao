@@ -83,6 +83,8 @@ print(f"\n{green}bio\n{reset}{bio}\n")
 # Série Histórica de Ondas de Calor
 onda = pd.read_csv(f"{caminho_dados}{onda}", low_memory = False)
 onda["data"] = pd.to_datetime(onda["data"])
+#onda["acima"] = onda["tmax"] - onda ["tmax_clima"]
+print(f"\n{green}Menores TMAX\n{reset}{onda.where(onda['tmax'] <= 25).dropna()}\n")
 print(f"\n{green}onda de calor\n{reset}{onda}\n")
 
 ### Concatenando Meteorologia e Óbitos
