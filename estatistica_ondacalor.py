@@ -99,7 +99,7 @@ print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
 print(f"\n{green}Onda de calor\n{reset}{onda.describe()}\n")
 print(f"\n{green}Biometeorologia\n{reset}{biometeoro.describe()}\n")
 onda[["tmax", "tmax_clima", "obitos"]].plot()
-plt.show()
+#plt.show()
 
 
 
