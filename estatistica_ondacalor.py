@@ -101,7 +101,22 @@ print(f"\n{green}Biometeorologia\n{reset}{biometeoro.describe()}\n")
 onda[["tmax", "tmax_clima", "obitos"]].plot()
 #plt.show()
 
-
+inverno = onda.copy()
+inverno["dia"] = inverno["data"]
+inverno.set_index("dia", inplace = True)
+inverno.index = pd.to_datetime(inverno.index)
+inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
+inverno.reset_index(inplace = True)
+inverno.drop(columns = "dia", inplace = True)
+print(f"\n{green}PERÍODO SELECIONADO: INVERNO (AMJJAS)\n{reset}{inverno}\n{inverno.info()}\n{inverno.describe()}\n")
+verao = onda.copy()
+verao["dia"] = verao["data"]
+verao.set_index("dia", inplace = True)
+verao.index = pd.to_datetime(verao.index)
+verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
+verao.reset_index(inplace = True)
+verao.drop(columns = "dia", inplace = True)
+print(f"\n{green}PERÍODO SELECIONADO: VERÃO (DJF)\n{reset}{verao}\n{verao.info()}\n{verao.describe()}\n")
 
 
 
