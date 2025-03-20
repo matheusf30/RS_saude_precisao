@@ -36,7 +36,7 @@ _SALVAR = sys.argv[3]        # True|False                    #####
 _SALVAR = True if _SALVAR == "True" else False               #####
 ##################################################################
 ##################################################################
-"""       
+"""   
 _RETROAGIR = 7 # Dias
 
 cidade = "Porto Alegre"
@@ -98,17 +98,17 @@ print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
 ### Estatística Descritiva
 print(f"\n{green}Onda de calor\n{reset}{onda.describe()}\n")
 print(f"\n{green}Biometeorologia\n{reset}{biometeoro.describe()}\n")
-onda[["tmax", "tmax_clima", "obitos"]].plot()
+#onda[["tmax", "tmax_clima", "obitos"]].plot()
 #plt.show()
 
 inverno = onda.copy()
 inverno["dia"] = inverno["data"]
 inverno.set_index("dia", inplace = True)
 inverno.index = pd.to_datetime(inverno.index)
-inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
+inverno = inverno[(inverno.index.month >= 6) & (inverno.index.month <= 8)]
 inverno.reset_index(inplace = True)
 inverno.drop(columns = "dia", inplace = True)
-print(f"\n{green}PERÍODO SELECIONADO: INVERNO (AMJJAS)\n{reset}{inverno}\n{inverno.info()}\n{inverno.describe()}\n")
+print(f"\n{green}PERÍODO SELECIONADO: INVERNO (JJA)\n{reset}{inverno}\n{inverno.info()}\n{inverno.describe()}\n")
 verao = onda.copy()
 verao["dia"] = verao["data"]
 verao.set_index("dia", inplace = True)
@@ -118,7 +118,38 @@ verao.reset_index(inplace = True)
 verao.drop(columns = "dia", inplace = True)
 print(f"\n{green}PERÍODO SELECIONADO: VERÃO (DJF)\n{reset}{verao}\n{verao.info()}\n{verao.describe()}\n")
 
-
+# Visualizando Ondas de Calor
+plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
+biometeoro[["tmax", "obitos"]].plot()
+"""
+sns.lineplot(y = biometeoro["obitos"], label = "Óbito", #x = biometeoro["data"]
+				color = "black", linewidth = 1, alpha = 0.7 )
+sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"], label = "Temperatura Máxima",
+				color = "black", linewidth = 1, alpha = 0.7 )
+"""
+sns.scatterplot(x = verao["data"], y = verao["obitos"],
+				color = "purple", marker = "o", alpha = 0.7,
+				label = "Óbito em Onda de Calor")
+sns.scatterplot(x = verao["data"], y = verao["tmax_clima"], #scatter
+				color = "orange", marker = "o", alpha = 0.7,
+				label = "Temperatura Esperada (Média da Temperatura Máxima Diária)")
+plt.legend()
+plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ONDAS DE CALOR.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
+plt.xlabel("Série Histórica (Observação Diária)")
+plt.ylabel("Número de Óbitos Cardiovasculares x Temperatura Máxima")
+plt.show()
+sys.exit()
+if _SALVAR == "True":
+	caminho_onda = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/ondacalor/"
+	os.makedirs(caminho_onda, exist_ok = True)
+	plt.savefig(f'{caminho_indice}onda_calor_porto_alegre.pdf',
+				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	print(f"""\n{green}SALVO COM SUCESSO!
+	{cyan}ENCAMINHAMENTO: {caminho_indice}
+	NOME DO ARQUIVO: serie_IAM1_porto_alegre.pdf{reset}\n""")
+if _VISUALIZAR == "True":
+	print(f"{green}Exibindo a distribuição de óbitos e ondas de calor do município de Porto Alegre.{reset}")
+	plt.show()
 
 
 
