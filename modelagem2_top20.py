@@ -789,9 +789,9 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		metrica_shap(1, modelo1, treino_x1, teste_x1)
-		metrica_shap(2, modelo2, treino_x2, teste_x2)
-		metrica_shap(3, modelo3, treino_x3, teste_x3)
+		metrica_shap(1, modelo1, treino_x_explicado1, teste_x1)
+		metrica_shap(2, modelo2, treino_x_explicado2, teste_x2)
+		metrica_shap(3, modelo3, treino_x_explicado3, teste_x3)
 		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
