@@ -447,10 +447,11 @@ def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
 		                                                test_size = tamanho_teste)
 	explicativas = x.columns.tolist()
 	treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
+	df_treino_x_explicado = treino_x_explicado.copy()
 	treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
 	print(f"\n{green}explicativas:\n{reset}{explicativas}\n")
 	print(f"\n{green}treino_x_explicado:\n{reset}{treino_x_explicado}\n")
-	return x_array, y_array, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, explicativas, SEED
+	return x_array, y_array, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, df_treino_x_explicado, explicativas, SEED
 
 def escalona(treino_x, teste_x):
 	escalonador = StandardScaler()
@@ -679,10 +680,10 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	shap.summary_plot(valor_shap, teste_x)#, legacy_colorbar = True)
 	nome_arquivo = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
 	if _SALVAR == True:
-		plt.savefig(f'{caminho_shap}{nome_arquivo}', format = "pdf", dpi = 1200)
-		print(f"{green}\nSALVANDO:\n{caminho_shap}{nome_arquivo}{reset}")
+		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 	if _VISUALIZAR == True:
-		print(f"{green}\nVISUALIZANDO:\n{caminho_shap}{nome_arquivo}{reset}")
+		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 		plt.show()
 	print(f"\n{green}VARIÁVEIS IMPORTANTES E VALORES (SHAP):\n{reset}{valor_shap}\n")
 
@@ -778,9 +779,9 @@ if _AUTOMATIZAR == True:
 		dataset1 = monta_dataset(dataset_inicio1)
 		dataset2 = monta_dataset(dataset_inicio2)
 		dataset3 = monta_dataset(dataset_inicio3)
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
 		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
 		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
 		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
@@ -793,21 +794,9 @@ if _AUTOMATIZAR == True:
 		caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
 		if not os.path.exists(caminho_shap):
 			os.makedirs(caminho_shap)
-		metrica_shap(1, modelo1, treino_x_explicado1, teste_x1)
-		explica1 = pd.DataFrame()
-		explica1["explicativas"] = explicativas1
-		explica1["valores"] = treino_x_explicado1
-		explica1.to_csv(f"{caminho_shap}explicativas1.csv")#, index = False)
-		metrica_shap(2, modelo2, treino_x_explicado2, teste_x2)
-		explica2 = pd.DataFrame()
-		explica2["explicativas"] = explicativas2
-		explica2["valores"] = treino_x_explicado2
-		explica2.to_csv(f"{caminho_shap}explicativas2.csv")#, index = False)
-		metrica_shap(3, modelo3, treino_x_explicado3, teste_x3)
-		explica3 = pd.DataFrame()
-		explica3["explicativas"] = explicativas3
-		explica3["valores"] = treino_x_explicado3
-		explica3.to_csv(f"{caminho_shap}explicativas3.csv")#, index = False)
+		metrica_shap(1, modelo1, df1, teste_x1)
+		metrica_shap(2, modelo2, df2, teste_x2)
+		metrica_shap(3, modelo3, df3, teste_x3)
 		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
@@ -882,9 +871,9 @@ if _AUTOMATIZAR == True:
 		dataset_f1 = seleciona_periodo(dataset1, "frio")
 		dataset_f2 = seleciona_periodo(dataset2, "frio")
 		dataset_f3 = seleciona_periodo(dataset3, "frio")
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
 		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
 		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
 		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
@@ -894,9 +883,9 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		metrica_shap(1, modelo1, treino_x1, teste_x1)
-		metrica_shap(2, modelo2, treino_x2, teste_x2)
-		metrica_shap(3, modelo3, treino_x3, teste_x3)
+		metrica_shap(1, modelo1, df1, teste_x1)
+		metrica_shap(2, modelo2, df2, teste_x2)
+		metrica_shap(3, modelo3, df3, teste_x3)
 		"""
 		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
@@ -981,9 +970,9 @@ if _AUTOMATIZAR == True:
 		dataset1 = monta_dataset(dataset_inicio1)
 		dataset2 = monta_dataset(dataset_inicio2)
 		dataset3 = monta_dataset(dataset_inicio3)
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
 		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
 		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
 		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
@@ -993,6 +982,9 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		metrica_shap(1, modelo1, df1, teste_x1)
+		metrica_shap(2, modelo2, df2, teste_x2)
+		metrica_shap(3, modelo3, df3, teste_x3)
 		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
@@ -1065,9 +1057,9 @@ if _AUTOMATIZAR == True:
 		dataset_f1 = seleciona_periodo(dataset1, "frio")
 		dataset_f2 = seleciona_periodo(dataset2, "frio")
 		dataset_f3 = seleciona_periodo(dataset3, "frio")
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
+		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
+		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
+		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
 		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
 		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
 		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
@@ -1077,6 +1069,9 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		metrica_shap(1, modelo1, df1, teste_x1)
+		metrica_shap(2, modelo2, df2, teste_x2)
+		metrica_shap(3, modelo3, df3, teste_x3)
 		"""
 		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
