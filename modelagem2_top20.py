@@ -673,15 +673,18 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
 	ax = plt.gca()
 	ax.set_title(f"SHAP (SHapley Additive exPlanations) PARA MODELO RANDOM FOREST\n({nome_arquivo}), MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
-	ax.set_ylabel("Valor SHAP ({nome_arquivo})")
+	ax.set_ylabel(f"Valor SHAP ({nome_arquivo})")
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
 	plt.rcParams.update({"figure.autolayout" : False})
 	shap.summary_plot(valor_shap, teste_x)#, legacy_colorbar = True)
-	nome_arquivo = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
+	nome_arquivo_pdf = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
+	nome_arquivo_csv = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.csv"
 	if _SALVAR == True:
-		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
-		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+		plt.savefig(f"{caminho_resultados}{nome_arquivo_pdf}", format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_pdf}{reset}")
+		treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
+		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_csv}{reset}")
 	if _VISUALIZAR == True:
 		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 		plt.show()
