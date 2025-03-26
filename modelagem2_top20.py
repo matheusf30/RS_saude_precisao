@@ -794,14 +794,20 @@ if _AUTOMATIZAR == True:
 		if not os.path.exists(caminho_shap):
 			os.makedirs(caminho_shap)
 		metrica_shap(1, modelo1, treino_x_explicado1, teste_x1)
-		pd.DataFrame(explicativas1)
-		explicativas1.to_csv(f"{caminho_shap}explicativas1.csv")#, index = False)
+		explica1 = pd.DataFrame()
+		explica1["explicativas"] = explicativas1
+		explica1["valores"] = treino_x_explicado1
+		explica1.to_csv(f"{caminho_shap}explicativas1.csv")#, index = False)
 		metrica_shap(2, modelo2, treino_x_explicado2, teste_x2)
-		pd.DataFrame(explicativas2)
-		explicativas2.to_csv(f"{caminho_shap}explicativas2.csv")#, index = False)
+		explica2 = pd.DataFrame()
+		explica2["explicativas"] = explicativas2
+		explica2["valores"] = treino_x_explicado2
+		explica2.to_csv(f"{caminho_shap}explicativas2.csv")#, index = False)
 		metrica_shap(3, modelo3, treino_x_explicado3, teste_x3)
-		pd.DataFrame(explicativas3)
-		explicativas3.to_csv(f"{caminho_shap}explicativas3.csv")#, index = False)
+		explica3 = pd.DataFrame()
+		explica3["explicativas"] = explicativas3
+		explica3["valores"] = treino_x_explicado3
+		explica3.to_csv(f"{caminho_shap}explicativas3.csv")#, index = False)
 		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
