@@ -672,8 +672,8 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	else:
 		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
 	ax = plt.gca()
-	ax.set_title(f"SHAP (SHapley Additive exPlanations) PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
-	ax.set_ylabel("Valor SHAP")
+	ax.set_title(f"SHAP (SHapley Additive exPlanations) PARA MODELO RANDOM FOREST\n({nome_arquivo}), MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
+	ax.set_ylabel("Valor SHAP ({nome_arquivo})")
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
 	plt.rcParams.update({"figure.autolayout" : False})
