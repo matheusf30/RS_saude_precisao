@@ -77,6 +77,7 @@ print(_cidade)
 caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
 caminho_indices = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
 caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
 
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
@@ -678,10 +679,10 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	shap.summary_plot(valor_shap, teste_x)#, legacy_colorbar = True)
 	nome_arquivo = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
 	if _SALVAR == True:
-		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
-		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+		plt.savefig(f'{caminho_shap}{nome_arquivo}', format = "pdf", dpi = 1200)
+		print(f"{green}\nSALVANDO:\n{caminho_shap}{nome_arquivo}{reset}")
 	if _VISUALIZAR == True:
-		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
+		print(f"{green}\nVISUALIZANDO:\n{caminho_shap}{nome_arquivo}{reset}")
 		plt.show()
 	print(f"\n{green}VARIÁVEIS IMPORTANTES E VALORES (SHAP):\n{reset}{valor_shap}\n")
 
@@ -789,9 +790,18 @@ if _AUTOMATIZAR == True:
 		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
 		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
 		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
+		caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
+		if not os.path.exists(caminho_shap):
+			os.makedirs(caminho_shap)
 		metrica_shap(1, modelo1, treino_x_explicado1, teste_x1)
+		pd.DataFrame(explicativas1)
+		explicativas1.to_csv(f"{caminho_shap}explicativas1.csv")#, index = False)
 		metrica_shap(2, modelo2, treino_x_explicado2, teste_x2)
+		pd.DataFrame(explicativas2)
+		explicativas2.to_csv(f"{caminho_shap}explicativas2.csv")#, index = False)
 		metrica_shap(3, modelo3, treino_x_explicado3, teste_x3)
+		pd.DataFrame(explicativas3)
+		explicativas3.to_csv(f"{caminho_shap}explicativas3.csv")#, index = False)
 		"""
 		grafico_previsao(1, dataset1, previsoes1, R_2_1)
 		grafico_previsao(2, dataset2, previsoes2, R_2_2)
