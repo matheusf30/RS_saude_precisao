@@ -43,7 +43,7 @@ reset = "\033[0m"
 ### CONDIÇÕES PARA VARIAR ########################################
 ##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
 _AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False      #####
+_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False     #####
 _VISUALIZAR = sys.argv[2]    # True|False                    #####
 _VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
 _SALVAR = sys.argv[3]        # True|False                    #####
@@ -683,6 +683,9 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	if _SALVAR == True:
 		plt.savefig(f"{caminho_resultados}{nome_arquivo_pdf}", format = "pdf", dpi = 1200)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_pdf}{reset}")
+		treino_x = treino_x.T
+		treino_x.reset_index(inplace = True)
+		treino_x = treino_x.iloc[:,:3]
 		treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_csv}{reset}")
 	if _VISUALIZAR == True:
