@@ -688,6 +688,7 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 		treino_x = treino_x.iloc[:,:1]
 		treino_x = treino_x.rename(columns = {"index" : "variavel"})
 		treino_x["indice"] = range(0, len(treino_x))
+		treino_x = treino_x[["indice", "variavel"]]
 		treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_csv}{reset}")
 	if _VISUALIZAR == True:
