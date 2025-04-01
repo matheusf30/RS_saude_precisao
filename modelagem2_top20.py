@@ -88,11 +88,12 @@ clima = "climatologia.csv"
 anomalia = "anomalia.csv"
 bio = "obito_cardiovasc_total_poa_96-22.csv"
 p75 = "serie_IAM3_porto_alegre.csv"
+biometeoro = "biometeoro_PORTO_ALEGRE.csv"
 
 
 ### Abrindo Arquivo e Pré-processamento
 # Meteoro
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
+meteoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
 meteoro["data"] = pd.to_datetime(meteoro["data"])
 clima = pd.read_csv(f"{caminho_dados}{clima}", low_memory = False)
 anomalia = pd.read_csv(f"{caminho_dados}{anomalia}", low_memory = False)
