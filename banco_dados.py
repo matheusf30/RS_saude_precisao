@@ -9,19 +9,6 @@ from scipy.ndimage import gaussian_filter1d
 # Suporte
 import os
 import sys
-import joblib
-# Pré-Processamento e Validações
-from imblearn.over_sampling import SMOTE, RandomOverSampler
-from imblearn.under_sampling import RandomUnderSampler
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, accuracy_score, r2_score#, RocCurveDisplay
-from sklearn.inspection import permutation_importance
-# Modelos e Visualizações
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
-from sklearn.tree import export_graphviz, export_text, plot_tree
-#from sklearn.utils.graph import single_source_shortest_path_lenght as short_path
 
 ##### Padrão ANSI ###############################################################
 bold = "\033[1m"
@@ -34,24 +21,6 @@ cyan = "\033[36m"
 white = "\033[37m"
 reset = "\033[0m"
 #################################################################################
-
-### CONDIÇÕES PARA VARIAR ##################################
-                                                       #####
-_LOCAL = "SIFAPSC" # OPÇÕES >>> GH|CASA|CLUSTER|SIFAPSC#####
-                                                       #####
-##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
-_AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZA = True if _AUTOMATIZAR == "True" else False      #####
-_VISUALIZAR = sys.argv[2]    # True|False                    #####
-_VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
-_SALVAR = sys.argv[3]        # True|False                    #####
-_SALVAR = True if _SALVAR == "True" else False               #####
-##################################################################
-        
-_RETROAGIR = 7 # Dias
-_HORIZONTE = 0 # Tempo de Previsão
-_JANELA_MM = 0 # Média Móvel
-_K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
 cidade = cidade.upper()
@@ -68,7 +37,7 @@ print(_cidade)
 #sys.exit()
 
 #########################################################################
-
+_LOCAL = "SIFAPSC"
 ### Encaminhamento aos Diretórios
 if _LOCAL == "GH":
 	caminho_dados = "https://github.com/matheusf30/RS_saude_precisao/tree/main/dados/"
@@ -90,7 +59,8 @@ print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminh
 ### Renomeação das Variáveis pelos Arquivos
 meteoro = "meteo_poa_h_96-22.csv"
 bio = "obito_cardiovasc_total_poa_96-22.csv"
-oc = "PoA_oc_1996-01-01_2022-12-31.xlsx"
+#oc = "PoA_oc_1996-01-01_2022-12-31.xlsx"
+temps = "dados_83967_D_1996-01-01_2022-12-31.csv"
 """
 prec = "prec_semana_ate_2023.csv"
 tmin = "tmin_semana_ate_2023.csv"
@@ -100,16 +70,19 @@ tmax = "tmax_semana_ate_2023.csv"
 ### Abrindo Arquivo
 meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", skiprows = 10, sep = ";", low_memory = False)
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
-oc = 
+temps = pd.read_csv(f"{caminho_dados}{temps}", skiprows = 10, sep = ";", low_memory = False)
 """
 prec = pd.read_csv(f"{caminho_dados}{prec}")
 tmin = pd.read_csv(f"{caminho_dados}{tmin}", low_memory = False)
 tmed = pd.read_csv(f"{caminho_dados}{tmed}", low_memory = False)
 tmax = pd.read_csv(f"{caminho_dados}{tmax}", low_memory = False)
 """
+print(f"\n{green}METEORO:\n{reset}{meteoro}\n")
+print(f"\n{green}BIO:\n{reset}{bio}\n")
+print(f"\n{green}TEMPERATURAS:\n{reset}{temps}\n")
 
 
-
+#sys.exit()
 ### Pré-Processamento
 
 # BIO-SAÚDE
@@ -125,6 +98,14 @@ total = bio.groupby(by = ["data"])["obito"].sum()
 #idade = bio.groupby(by = ["data", "idade"])["obito"].sum()
 #causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
 
+#METEOROLOGIA NOVO
+temps = temps.drop(columns = "Unnamed: 3")
+temps = temps.rename(columns = {"Data Medicao" : "data",
+							"TEMPERATURA MAXIMA, DIARIA(°C)" : "tmax",
+							"TEMPERATURA MINIMA, DIARIA(°C)" : "tmin"})
+temps["data"] = pd.to_datetime(temps["data"])
+#temps[["tmax", "tmin"]] = temps[["tmax", "tmin"]].str.replace(',', '.').astype(float)
+temps[["tmax", "tmin"]] = temps[["tmax", "tmin"]].applymap(lambda x: float(x.replace(',', '.')) if isinstance(x, str) else float(x))
 # METEOROLOGIA
 meteoro.rename(columns = {"Data Medicao" : "data",
 						"Hora Medicao" : "hora",
@@ -154,12 +135,15 @@ urmax = meteoro.groupby(by = ["data"])["umidade"].max()
 meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
 print(tmin)
 meteoro["prec"] = prec
-meteoro["tmin"] = tmin
-meteoro["tmax"] = tmax
+meteoro["tmin_3h"] = tmin
+meteoro["tmax_3h"] = tmax
 meteoro["urmin"] = urmin
 meteoro["urmax"] = urmax
-meteoro["amplitude_t"] = meteoro["tmax"] - meteoro["tmin"]
+meteoro["amplitude_t_3h"] = meteoro["tmax_3h"] - meteoro["tmin_3h"]
 print(meteoro)
+print(f"\n{green}METEORO:\n{reset}{meteoro}\n")
+print(f"\n{green}BIO:\n{reset}{bio}\n")
+print(f"\n{green}TEMPERATURAS:\n{reset}{temps}\n")
 #sys.exit()
 
 # BIOMETEORO
@@ -168,12 +152,13 @@ meteoro["data"] = pd.to_datetime(meteoro["data"])
 total = total.to_frame(name = "obito")
 total.reset_index(inplace = True)
 biometeoro = meteoro.merge(total, on = "data", how = "inner")
+biometeoro = biometeoro.merge(temps, on = "data", how = "inner")
+#biometeoro[["tmax", "tmin"]] = biometeoro[["tmax", "tmin"]].astype(float)
+biometeoro["amplitude_t"] = biometeoro["tmax"] - biometeoro["tmin"]
 biometeoro = biometeoro[["data", "obito",
-						"tmin", "temp", "tmax", "amplitude_t",
-						"urmin", "umidade", "urmax",
+						"tmin_3h", "tmin", "temp", "tmax_3h", "tmax",
+						"amplitude_t_3h", "amplitude_t","urmin", "umidade", "urmax",
 						"prec", "pressao", "ventodir", "ventovel"]]
-
-
 print(80*"=")
 print(bio, bio.info())
 print(80*"=")
@@ -184,11 +169,14 @@ print(80*"=")
 print(meteoro, meteoro.info())
 print(80*"=")
 print(biometeoro, biometeoro.info())
+print(f"\n{green}BIOMETEORO:\n{reset}{biometeoro}\n")
 
-#sys.exit()
+biometeoro.to_csv(f"{caminho_dados}biometeoro_{_cidade}.csv", index = False)
+print(f"\n{green}SALVO COM SUCESSO:\n{caminho_dados}biometeoro_{_cidade}.csv\n{reset}")
+sys.exit()
 
 # Visualização Prévia
-_sigma = int(input(f"\n{ansi['cyan']}>>> Caso a suavização não seja necessária, digite zero (0).\n>>> Caso seja, selecione um número inteiro maior que zero: {ansi['reset']}"))
+_sigma = int(input(f"\n{cyan}>>> Caso a suavização não seja necessária, digite zero (0).\n>>> Caso seja, selecione um número inteiro maior que zero: {reset}"))
 if _sigma > 0:
 	biometeoro["s_obito"] = biometeoro["obito"].copy()
 	biometeoro["s_obito"] = gaussian_filter1d(biometeoro["s_obito"],
