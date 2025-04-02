@@ -173,8 +173,34 @@ print(f"\n{green}BIOMETEORO:\n{reset}{biometeoro}\n")
 
 biometeoro.to_csv(f"{caminho_dados}biometeoro_{_cidade}.csv", index = False)
 print(f"\n{green}SALVO COM SUCESSO:\n{caminho_dados}biometeoro_{_cidade}.csv\n{reset}")
-sys.exit()
 
+biometeoro_inverno = biometeoro.copy()
+biometeoro_inverno.set_index("data", inplace = True)
+print(f"\n{green}BIOMETEORO (INVERNO):\n{reset}{biometeoro_inverno}v\n")
+biometeoro_inverno = biometeoro_inverno[(biometeoro_inverno.index.month >= 6) & (biometeoro_inverno.index.month <= 8)]
+#biometeoro_inverno = biometeoro_inverno[biometeoro_inverno["data"].dt.month.isin(["06", "07", "08"])]
+print(f"\n{green}BIOMETEORO (INVERNO):\n{reset}{biometeoro_inverno}v\n")
+#sys.exit()
+biometeoro_inverno.to_csv(f"{caminho_dados}biometeoro_inverno_{_cidade}.csv", index = False)
+print(f"\n{green}SALVO COM SUCESSO:\n{caminho_dados}biometeoro_inverno_{_cidade}.csv\n{reset}")
+
+biometeoro_verao = biometeoro.copy()
+biometeoro_verao.set_index("data", inplace = True)
+print(f"\n{green}BIOMETEORO (VERÃO):\n{reset}{biometeoro_verao}v\n")
+biometeoro_verao1 = biometeoro_verao[(biometeoro_verao.index.month >= 12)]
+biometeoro_verao2 = biometeoro_verao[(biometeoro_verao.index.month <= 2)]
+biometeoro_verao = pd.concat([biometeoro_verao1, biometeoro_verao2])
+biometeoro_verao.reset_index(inplace = True)
+biometeoro_verao["data"] = pd.to_datetime(biometeoro_verao["data"])
+biometeoro_verao.sort_values(by = "data", inplace = True)
+print(f"\n{green}BIOMETEORO (VERÃO):\n{reset}{biometeoro_verao}v\n")
+#sys.exit()
+biometeoro_verao.to_csv(f"{caminho_dados}biometeoro_verao_{_cidade}.csv", index = False)
+print(f"\n{green}SALVO COM SUCESSO:\n{caminho_dados}biometeoro_verao_{_cidade}.csv\n{reset}")
+
+
+
+sys.exit()
 # Visualização Prévia
 _sigma = int(input(f"\n{cyan}>>> Caso a suavização não seja necessária, digite zero (0).\n>>> Caso seja, selecione um número inteiro maior que zero: {reset}"))
 if _sigma > 0:
