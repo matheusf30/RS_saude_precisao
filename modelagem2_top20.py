@@ -97,24 +97,6 @@ meteoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
 meteoro["data"] = pd.to_datetime(meteoro["data"])
 clima = pd.read_csv(f"{caminho_dados}{clima}", low_memory = False)
 anomalia = pd.read_csv(f"{caminho_dados}{anomalia}", low_memory = False)
-### ÍNDICES SIMPLIFICADOS DE SENSAÇÃO TÉRMICA
-# Wind Chill #https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z/wind-chill.html
-# Farenheit # miles per hour # https://www.weather.gov/media/epz/wxcalc/windChill.pdf
-meteoro["ventovel"] = meteoro["ventovel"] * 3.6 # m/s >> km/h
-Tc = meteoro["temp"] # T (C) < 10
-Tf = ((meteoro["temp"] * 9) / 5) + 32  # C >> F 
-Vkmh = meteoro["ventovel"] * 3.6 # ms >> km/h # V (km/h) > 4.82
-Vmph = meteoro["ventovel"] * 2.237 # ms >> mph 
-RH = meteoro["umidade"] # %
-#meteoro["wind_chillC"] = 13.12 + 0.6215 * Tc - 11.37 * Vkmh**0.16 + 0.3965 * Tc * Vkmh**0.16 # C km/h # Fazer condicionantes
-meteoro["wind_chill"] = 35.74 + 0.6215 * Tf - 35.75 * Vmph**0.16 + 0.4275 * Tf * Vmph**0.16 # F mph # Fazer condicionantes
-#meteoro["wind_chill"] = np.where((Tc < 10) & (Vkmh > 4.82),  meteoro["wind_chill"], None)
-# Heat Index #
-meteoro["heat_index"] =  -42.379 + 2.04901523*Tf + 10.14333127*RH - .22475541*Tf*RH - .00683783*Tf*Tf - .05481717*RH*RH + .00122874*Tf*Tf*RH + .00085282*Tf*RH*RH - .00000199*Tf*Tf*RH*RH
-ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf - 95.)) / 17)
-ajuste2 =  ((RH - 85) / 10) * ((87 - Tf) / 5)
-#meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
-#meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
 ### ÍNDICES DE AMPLITUDE TÉRMICA
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
 meteoro["indice_amplitude_up"] = meteoro["amplitude_t"] ** 2
@@ -177,7 +159,8 @@ meteoro_origem = meteoro.copy()
 meteoro = meteoro.merge(anomalia_estacionaria, left_on = "dia", how = "left", suffixes = ("", "_aest"), right_index = True)
 meteoro.drop(columns = ["dia", "dia_aest"], inplace = True)
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
-#sys.exit()
+print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
+sys.exit()
 #
 # Saúde
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
