@@ -160,7 +160,7 @@ meteoro = meteoro.merge(anomalia_estacionaria, left_on = "dia", how = "left", su
 meteoro.drop(columns = ["dia", "dia_aest"], inplace = True)
 print(f"\n{green}meteoro\n{reset}{meteoro}\n")
 print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
-sys.exit()
+#sys.exit()
 #
 # Saúde
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
