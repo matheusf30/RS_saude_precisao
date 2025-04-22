@@ -140,7 +140,6 @@ meteoro["tmax_3h"] = tmax
 meteoro["urmin"] = urmin
 meteoro["urmax"] = urmax
 meteoro["amplitude_t_3h"] = meteoro["tmax_3h"] - meteoro["tmin_3h"]
-print(meteoro)
 print(f"\n{green}METEORO:\n{reset}{meteoro}\n")
 print(f"\n{green}BIO:\n{reset}{bio}\n")
 print(f"\n{green}TEMPERATURAS:\n{reset}{temps}\n")
@@ -156,6 +155,30 @@ biometeoro = biometeoro.merge(temps, on = "data", how = "inner")
 #biometeoro[["tmax", "tmin"]] = biometeoro[["tmax", "tmin"]].astype(float)
 biometeoro["amplitude_t"] = biometeoro["tmax"] - biometeoro["tmin"]
 biometeoro = biometeoro[["data", "obito",
+						"tmin_3h", "tmin", "temp", "tmax_3h", "tmax",
+						"amplitude_t_3h", "amplitude_t","urmin", "umidade", "urmax",
+						"prec", "pressao", "ventodir", "ventovel"]]
+### ÍNDICES SIMPLIFICADOS DE SENSAÇÃO TÉRMICA
+# Wind Chill #https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z/wind-chill.html
+# Farenheit # miles per hour # https://www.weather.gov/media/epz/wxcalc/windChill.pdf
+biometeoro["ventovel"] = biometeoro["ventovel"] * 3.6 # m/s >> km/h
+Tc = biometeoro["temp"] # T (C) < 10
+Tf = ((biometeoro["temp"] * 9) / 5) + 32  # C >> F
+Tf_WC = ((biometeoro["tmin"] * 9) / 5) + 32  # C >> F 
+Tf_HI = ((biometeoro["tmax"] * 9) / 5) + 32  # C >> F 
+Vkmh = biometeoro["ventovel"] * 3.6 # ms >> km/h # V (km/h) > 4.82
+Vmph = biometeoro["ventovel"] * 2.237 # ms >> mph 
+RH = biometeoro["umidade"] # %
+#meteoro["wind_chillC"] = 13.12 + 0.6215 * Tc - 11.37 * Vkmh**0.16 + 0.3965 * Tc * Vkmh**0.16 # C km/h # Fazer condicionantes
+biometeoro["wind_chill"] = 35.74 + 0.6215 * Tf_WC - 35.75 * Vmph**0.16 + 0.4275 * Tf_WC * Vmph**0.16 # F mph # Fazer condicionantes
+#meteoro["wind_chill"] = np.where((Tc < 10) & (Vkmh > 4.82),  meteoro["wind_chill"], None)
+# Heat Index #
+biometeoro["heat_index"] =  -42.379 + 2.04901523*Tf_HI + 10.14333127*RH - .22475541*Tf_HI*RH - .00683783*Tf_HI*Tf_HI - .05481717*RH*RH + .00122874*Tf_HI*Tf_HI*RH + .00085282*Tf_HI*RH*RH - .00000199*Tf_HI*Tf_HI*RH*RH
+ajuste1 = ((13 - RH) / 4) * np.sqrt((17 - np.absolute(Tf_HI - 95.)) / 17)
+ajuste2 =  ((RH - 85) / 10) * ((87 - Tf_HI) / 5)
+#meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
+#meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
+biometeoro = biometeoro[["data", "obito", "heat_index", "wind_chill",
 						"tmin_3h", "tmin", "temp", "tmax_3h", "tmax",
 						"amplitude_t_3h", "amplitude_t","urmin", "umidade", "urmax",
 						"prec", "pressao", "ventodir", "ventovel"]]
