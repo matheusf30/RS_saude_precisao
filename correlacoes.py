@@ -26,21 +26,7 @@ _SALVAR = sys.argv[3]        # True|False  ####        #####
 ###############################################        #####
                                                        #####
 ############################################################
-"""
-_LIMIAR_RETRO = True
-_CLIMA = True
-_ENTOMOEPIDEMIO = True
-_LIMIAR_TMIN = True
-_LIMIAR_TMAX = True
-_LIMIAR_PREC = True
 
-_RETROAGIR = 16 # Semanas Epidemiológicas
-_ANO = "2023" # "2023" # "2022" # "2021" # "2020" # "total"
-_CIDADE = "Florianópolis" #"Florianópolis"#"Itajaí"#"Joinville"#"Chapecó"
-_METODO = "spearman" # "pearson" # "spearman" # "kendall"
-
-_CIDADE = _CIDADE.upper()
-"""
 ##### Padrão ANSI ###############################################################
 ansi = {"bold" : "\033[1m", "red" : "\033[91m",
         "green" : "\033[92m", "yellow" : "\033[33m",
@@ -66,116 +52,39 @@ else:
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
-meteoro = "meteo_poa_h_96-22.csv"
-bio = "obito_cardiovasc_total_poa_96-22.csv"
+biometeoro = "biometeoro_PORTO_ALEGRE.csv"
+verao = "biometeoro_verao_PORTO_ALEGRE.csv"
+inverno = "biometeoro_inverno_PORTO_ALEGRE.csv"
 
 ### Abrindo Arquivo
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", skiprows = 10, sep = ";", low_memory = False)
-bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
+biometeoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
+verao = pd.read_csv(f"{caminho_dados}{verao}", low_memory = False)
+inverno = pd.read_csv(f"{caminho_dados}{inverno}", low_memory = False)
 
 ### Pré-Processamento
 
-# BIO-SAÚDE
-bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
-bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
-bio.reset_index(inplace = True)
-bio["obito"] = np.ones(len(bio)).astype(int)
-bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace = True)
-bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
-#bio = bio.groupby(by = ["data"])["obito"].sum()
-total = bio.groupby(by = ["data"])["obito"].sum()
-#sexo = bio.groupby(by = ["data", "sexo"])["obito"].sum()
-#idade = bio.groupby(by = ["data", "idade"])["obito"].sum()
-#causa = bio.groupby(by = ["data", "causa"])["obito"].sum()
-
-# METEOROLOGIA
-meteoro.rename(columns = {"Data Medicao" : "data",
-						"Hora Medicao" : "hora",
-						"PRECIPITACAO TOTAL, HORARIO(mm)" : "prec",
-						"PRESSAO ATMOSFERICA AO NIVEL DO MAR, HORARIA(mB)" : "pressao",
-						"TEMPERATURA DO AR - BULBO SECO, HORARIA(°C)" : "temp",
-						"UMIDADE RELATIVA DO AR, HORARIA(%)" : "umidade",
-						"VENTO, DIRECAO HORARIA(codigo)" : "ventodir",
-						"VENTO, VELOCIDADE HORARIA(m/s)" : "ventovel"}, inplace = True)
-meteoro.drop(columns = "Unnamed: 8", inplace = True)
-meteoro.dropna(axis = 0, inplace = True)
-colunas_objt = meteoro.select_dtypes(include='object').columns
-meteoro = meteoro.replace("," , ".")
-meteoro[colunas_objt] = meteoro[colunas_objt].apply(lambda x: x.str.replace(",", "."))
-meteoro["prec"] = pd.to_numeric(meteoro["prec"], errors = "coerce")
-meteoro["pressao"] = pd.to_numeric(meteoro["pressao"], errors = "coerce")
-meteoro["temp"] = pd.to_numeric(meteoro["temp"], errors = "coerce")
-meteoro["ventovel"] = pd.to_numeric(meteoro["ventovel"], errors = "coerce")
-meteoro = meteoro.groupby("data").filter(lambda x: len(x) == 3)
-print(meteoro)
-#sys.exit()
-prec = meteoro.groupby(by = ["data"])["prec"].sum()
-tmax = meteoro.groupby(by = ["data"])["temp"].max()
-tmin = meteoro.groupby(by = ["data"])["temp"].min()
-urmin = meteoro.groupby(by = ["data"])["umidade"].min()
-urmax = meteoro.groupby(by = ["data"])["umidade"].max()
-meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
-print(tmin)
-meteoro["prec"] = prec
-meteoro["tmin"] = tmin
-meteoro["tmax"] = tmax
-meteoro["urmin"] = urmin
-meteoro["urmax"] = urmax
-meteoro["amplitude_t"] = meteoro["tmax"] - meteoro["tmin"]
-print(meteoro)
-if _SALVAR == "True":
-	nome_arquivo = "meteoro_porto_alegre.csv"
-	caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
-	os.makedirs(caminho_dados, exist_ok = True)
-	meteoro.to_csv(f"{caminho_dados}{nome_arquivo}", index = True)
-	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
-	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
-	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
-	{ansi['cyan']}ENCAMINHAMENTO: {caminho_dados}\n
-	NOME DO ARQUIVO: {caminho_dados}{nome_arquivo}{ansi['reset']}\n""")
-#sys.exit()
-
 # BIOMETEORO
-meteoro.reset_index(inplace = True)
-meteoro["data"] = pd.to_datetime(meteoro["data"])
-total = total.to_frame(name = "obito")
-total.reset_index(inplace = True)
-biometeoro = meteoro.merge(total, on = "data", how = "inner")
-biometeoro = biometeoro[["data", "obito",
-						"tmin", "temp", "tmax", "amplitude_t",
-						"urmin", "umidade", "urmax",
-						"prec", "pressao", "ventodir", "ventovel"]]
 print(80*"=")
-print(bio, bio.info())
-print(80*"=")
-print(total, total.info())
-print(80*"=")
-print(prec, prec.info())
-print(80*"=")
-print(meteoro, meteoro.info())
-print(80*"=")
+print("\n\nBIOMEOTEORO\n\n")
 print(biometeoro, biometeoro.info())
+print(80*"=")
+print("\n\nVERÃO\n\n")
+print(verao, verao.info())
+print(80*"=")
+print("\n\nINVERNO\n\n")
+print(inverno, inverno.info())
+print(80*"=")
 print("\nbiometeoro.iloc[-365:,:]\n", biometeoro.iloc[-365:,:])
+
 #sys.exit()
 
-# Selecionando Períodos
-inverno = biometeoro.copy()
-inverno.set_index("data", inplace = True)
-inverno.index = pd.to_datetime(inverno.index)
-inverno = inverno[(inverno.index.month >= 4) & (inverno.index.month <= 9)]
-print(f"\nPERÍODO SELECIONADO: INVERNO\n{inverno}\n{inverno.info()}\n")
-verao = biometeoro.copy()
-verao.set_index("data", inplace = True)
-verao.index = pd.to_datetime(verao.index)
-verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
-print(f"\nPERÍODO SELECIONADO: VERÃO\n{verao}\n{verao.info()}\n")
-#sys.exit()
+
 
 # Tratando Sazonalidade
 timeindex = biometeoro.copy()
+timeindex["data"] = pd.to_datetime(timeindex["data"])
 timeindex = timeindex.set_index("data")
 timeindex["dia"] = timeindex.index.dayofyear
-#timeindex["mes_dia"] = timeindex.index.to_period('M').astype(str) + '-' + timeindex.index.day.astype(str)
 print("\ntimeindex\n", timeindex,"~"*80, timeindex.info())
 print("="*80)
 #sys.exit()
@@ -190,18 +99,18 @@ sns.lineplot(x = media_dia["dia"], y = media_dia["obito"],
 sns.lineplot(x = media_dia["dia"], y = media_dia["tmin"],
 				color = "darkblue", linewidth = 1, label = "Temperatura Mínima")
 sns.lineplot(x = media_dia["dia"], y = media_dia["tmax"],
-				color = "red", linewidth = 1, label = "Temperatura Máxima") #alpha = 0.7, linewidth = 3
+				color = "red", linewidth = 1, label = "Temperatura Máxima")
 plt.title("DISTRIBUIÇÃO DE TEMPERATURA MÍNIMA, TEMPERATURA MÁXIMA E ÓBITOS CARDIOVASCULARES.\nMÉDIAS ANUAIS PARA O MUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
-#media_dia[["obito","tmin","tmax"]].plot()
+
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	#media_dia.to_csv(f"{caminho_dados}climatologia.csv", index = True)
-	#print(f"\n{ansi['green']}SALVO COM SUCESSO!\nCLIMATOLOGIA.csv\n{ansi['reset']}")
-	#plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
-	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	media_dia.to_csv(f"{caminho_dados}climatologia.csv", index = True)
+	print(f"\n{ansi['green']}SALVO COM SUCESSO!\nCLIMATOLOGIA.csv\n{ansi['reset']}")
+	plt.savefig(f'{caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf',
+				format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
 	NOME DO ARQUIVO: {caminho_correlacao}distribuicao_medianual_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
@@ -224,7 +133,7 @@ for coluna in timeindex.columns:
 sem_sazonal.drop(columns = "dia", inplace = True)
 print(sem_sazonal)
 print(sem_sazonal.columns)
-#sem_sazonal[["tmin","tmax", "obito"]].plot()
+
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
 sns.lineplot(x = sem_sazonal.index, y = sem_sazonal["tmin"],
 				color = "darkblue", linewidth = 1, label = "Temperatura Mínima")
@@ -238,10 +147,10 @@ plt.ylabel("Número de Óbitos Cardiovasculares X Temperaturas (C)")
 if _SALVAR == "True":
 	caminho_correlacao = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/descritiva/"
 	os.makedirs(caminho_correlacao, exist_ok = True)
-	#sem_sazonal.to_csv(f"{caminho_dados}anomalia.csv", index = True)
-	#print(f"\n{ansi['green']}SALVO COM SUCESSO!\nANOMALIA.csv\n{ansi['reset']}")
-	#plt.savefig(f'{caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf',
-	#			format = "pdf", dpi = 1200,  bbox_inches = "tight", pad_inches = 0.0)
+	sem_sazonal.to_csv(f"{caminho_dados}anomalia.csv", index = True)
+	print(f"\n{ansi['green']}SALVO COM SUCESSO!\nANOMALIA.csv\n{ansi['reset']}")
+	plt.savefig(f'{caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf',
+				format = "pdf", dpi = 300,  bbox_inches = "tight", pad_inches = 0.0)
 	print(f"""\n{ansi['green']}SALVO COM SUCESSO!\n
 	{ansi['cyan']}ENCAMINHAMENTO: {caminho_correlacao}\n
 	NOME DO ARQUIVO: {caminho_correlacao}distribuicao_seriehistorica_semsazonal_tmin_tmax_obitos_Porto_Alegre.pdf{ansi['reset']}\n""")
@@ -250,9 +159,10 @@ if _VISUALIZAR == "True":
 	plt.show()
 #sys.exit()
 # Verificando Tendência
-colunas = ['obito', 'tmin', 'temp', 'tmax', 'amplitude_t',
-			'urmin', 'umidade', 'urmax', 'prec',
-			'pressao', 'ventodir', 'ventovel']
+colunas = ["obito", "heat_index", "wind_chill",
+			"tmin", "temp", "tmax",
+			"amplitude_t","urmin", "umidade", "urmax",
+			"prec", "pressao", "ventodir", "ventovel"]
 for c in colunas:
 	tendencia = mk.original_test(sem_sazonal[c])
 	if tendencia.trend == "decreasing":
@@ -276,80 +186,25 @@ for c in colunas:
 	anomalia_estacionaria[c] = sem_tendencia
 print(f"{ansi['green']}\nsem_sazonal\n{ansi['reset']}", sem_sazonal)
 print(f"{ansi['green']}\nanomalia_estacionaria\n{ansi['reset']}", anomalia_estacionaria)
+if _SALVAR == "True":
+	anomalia_estacionaria.to_csv(f"{caminho_dados}anomalia_estacionaria.csv", index = True)
 
-"""
-sys.exit()
-
-# Tratando Tendência
-print("="*80, "\nTratando Tendência\n")
-print("\nsem_sazonal.shape\n", sem_sazonal.shape)
-print("\nlen(sem_sazonal.index)\n", len(sem_sazonal.index))
-print("\nlen(sem_sazonal.columns)\n", len(sem_sazonal.columns))
-print("\nsem_sazonal.index\n", sem_sazonal.index)
-print("\nsem_sazonal.columns\n", sem_sazonal.columns)
-array = xr.DataArray(sem_sazonal.values,
-					dims = ["data", "variable"],
-					coords = {"data": sem_sazonal.index,
-							"variable": sem_sazonal.columns})
-print("\nArray\n", array)
-print("\narray.variable.values\n", array.variable.values)
-sys.exit()
-resultados = {"slope": {},
-			"intercept": {},
-			"r_value": {},
-			"p_value": {},
-			"std_err": {} }
-for var in array.variable.values:
-	try:
-		y = array.sel(variable=var).values
-		x = np.arange(len(array.data))
-		slope, intercept, r_value, p_value, std_err = linregress(x, y)
-		resultados["slope"][var] = slope
-		resultados["intercept"][var] = intercept
-		resultados["r_value"][var] = r_value
-		resultados["p_value"][var] = p_value
-		resultados["std_err"][var] = std_err
-	except KeyError:
-		print(f"Variable '{var}' not found in the DataArray.")
-	except Exception as e:
-		print(f"An error occurred for variable '{var}': {e}")
-df_resultados = pd.DataFrame(resultados)
-print("\nResultados\n", df_resultados)
-
-sys.exit()
-#tendencia = esm.linregress(x = array, y = array, dim = "data")
-
-print(tendencia)
-print("="*80)
-sys.exit()
-
-print("="*80)
-componente_sazonal = pd.DataFrame(index = timeindex.index)
-# Extract the day of the year for each date
-componente_sazonal['dia'] = timeindex.index.dayofyear
-# Merge with media_dia to get daily mean values
-componente_sazonal = componente_sazonal.join(media_dia, on = 'dia', how = 'left', rsuffix = '_mean')
-# Calculate the seasonality by subtracting daily means from the original data
-print(componente_sazonal, componente_sazonal.info())
-sys.exit()
-for col in timeindex.columns:
-	if col in componente_sazonal.columns:
-		componente_sazonal[col] = timeindex[col] - media_dia[col]
-print(componente_sazonal)
-"""
 #sys.exit()
 #################################################################################
 ### Correlações
 #################################################################################
 lista_METODO = ["pearson", "spearman"]#, "pearson", "spearman"
-colunas_r = ['tmin', 'temp', 'tmax', 'amplitude_t',
-			'urmin', 'umidade', 'urmax', 'prec',
-			'pressao', 'ventodir', 'ventovel']
+
+colunas_r = ["heat_index", "wind_chill",
+			"tmin", "temp", "tmax",
+			"amplitude_t","urmin", "umidade", "urmax",
+			"prec", "pressao", "ventodir", "ventovel"]
 _retroceder = [3, 6, 9]
 
 # Correlações Dados Brutos Durante Invernos
 # Até 3 dias retroagidos
 inverno_set = inverno.copy()
+inverno_set = inverno_set.drop(columns = "data")
 for _r in range(1, _retroceder[0] +1):
 	for c_r in colunas_r:
 		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
@@ -376,6 +231,7 @@ for _METODO in lista_METODO:
 		plt.show()
 # Até 6 dias retroagidos
 inverno_set = inverno.copy()
+inverno_set = inverno_set.drop(columns = "data")
 for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 	for c_r in colunas_r:
 		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
@@ -402,6 +258,7 @@ for _METODO in lista_METODO:
 		plt.show()
 # Até 9 dias retroagidos
 inverno_set = inverno.copy()
+inverno_set = inverno_set.drop(columns = "data")
 for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
 	for c_r in colunas_r:
 		inverno_set[f"{c_r}_r{_r}"] = inverno_set[f"{c_r}"].shift(-_r)
@@ -430,6 +287,7 @@ for _METODO in lista_METODO:
 # Correlações Dados Brutos Durante Verões
 # Até 3 dias retroagidos
 verao_set = verao.copy()
+verao_set = verao_set.drop(columns = "data")
 for _r in range(1, _retroceder[0] +1):
 	for c_r in colunas_r:
 		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
@@ -456,6 +314,7 @@ for _METODO in lista_METODO:
 		plt.show()
 # Até 6 dias retroagidos
 verao_set = verao.copy()
+verao_set = verao_set.drop(columns = "data")
 for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 	for c_r in colunas_r:
 		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
@@ -482,6 +341,7 @@ for _METODO in lista_METODO:
 		plt.show()
 # Até 9 dias retroagidos
 verao_set = verao.copy()
+verao_set = verao_set.drop(columns = "data")
 for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
 	for c_r in colunas_r:
 		verao_set[f"{c_r}_r{_r}"] = verao_set[f"{c_r}"].shift(-_r)
@@ -506,11 +366,12 @@ for _METODO in lista_METODO:
 	if _VISUALIZAR == "True":
 		print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos entre dezembro e fevereiro do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 		plt.show()
-sys.exit()
+#sys.exit()
 
 # Anomalias Estacionárias
 # Até 3 dias retroagidos
 anomalia_estacionaria_set = anomalia_estacionaria.copy()
+#anomalia_estacionaria_set = anomalia_estacionaria_set.drop(columns = "data")
 for _r in range(1, _retroceder[0] +1):
 	for c_r in colunas_r:
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
@@ -535,6 +396,7 @@ if _VISUALIZAR == "True":
 	plt.show()
 # Até 6 dias retroagidos
 anomalia_estacionaria_set = anomalia_estacionaria.copy()
+#anomalia_estacionaria_set = anomalia_estacionaria_set.drop(columns = "data")
 for _r in range(_retroceder[0] + 1, _retroceder[1] + 1):
 	for c_r in colunas_r:
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
@@ -559,6 +421,7 @@ if _VISUALIZAR == "True":
 	plt.show()
 # Até 9 dias retroagidos
 anomalia_estacionaria_set = anomalia_estacionaria.copy()
+#anomalia_estacionaria_set = anomalia_estacionaria_set.drop(columns = "data")
 for _r in range(_retroceder[1] + 1, _retroceder[2] + 1):
 	for c_r in colunas_r:
 		anomalia_estacionaria_set[f"{c_r}_r{_r}"] = anomalia_estacionaria_set[f"{c_r}"].shift(-_r)
@@ -732,7 +595,7 @@ if _SALVAR == "True":
 if _VISUALIZAR == "True":
 	print(f"{ansi['green']}Exibindo a Matriz de Correlação de {_METODO.title()} de dados brutos do município de Porto Alegre com até {_retroceder[2]} dias retroagidos. {ansi['reset']}")
 	plt.show()
-
+sys.exit()
 # Dados Brutos de 2022
 # Até 3 dias retroagidos
 ultimo_ano = biometeoro.iloc[-365:,:].set_index("data")
