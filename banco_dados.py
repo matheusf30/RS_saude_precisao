@@ -135,11 +135,11 @@ urmax = meteoro.groupby(by = ["data"])["umidade"].max()
 meteoro = meteoro.groupby(by = "data")[["pressao", "temp", "umidade", "ventodir", "ventovel"]].mean().round(2)
 print(tmin)
 meteoro["prec"] = prec
-meteoro["tmin_3h"] = tmin
-meteoro["tmax_3h"] = tmax
+#meteoro["tmin_3h"] = tmin
+#meteoro["tmax_3h"] = tmax
 meteoro["urmin"] = urmin
 meteoro["urmax"] = urmax
-meteoro["amplitude_t_3h"] = meteoro["tmax_3h"] - meteoro["tmin_3h"]
+#meteoro["amplitude_t_3h"] = meteoro["tmax_3h"] - meteoro["tmin_3h"]
 print(f"\n{green}METEORO:\n{reset}{meteoro}\n")
 print(f"\n{green}BIO:\n{reset}{bio}\n")
 print(f"\n{green}TEMPERATURAS:\n{reset}{temps}\n")
@@ -155,8 +155,8 @@ biometeoro = biometeoro.merge(temps, on = "data", how = "inner")
 #biometeoro[["tmax", "tmin"]] = biometeoro[["tmax", "tmin"]].astype(float)
 biometeoro["amplitude_t"] = biometeoro["tmax"] - biometeoro["tmin"]
 biometeoro = biometeoro[["data", "obito",
-						"tmin_3h", "tmin", "temp", "tmax_3h", "tmax",
-						"amplitude_t_3h", "amplitude_t","urmin", "umidade", "urmax",
+						"tmin", "temp", "tmax",# "tmin_3h", "tmax_3h", "amplitude_t_3h",
+						"amplitude_t","urmin", "umidade", "urmax",
 						"prec", "pressao", "ventodir", "ventovel"]]
 ### ÍNDICES SIMPLIFICADOS DE SENSAÇÃO TÉRMICA
 # Wind Chill #https://www.meteoswiss.admin.ch/weather/weather-and-climate-from-a-to-z/wind-chill.html
@@ -179,8 +179,8 @@ ajuste2 =  ((RH - 85) / 10) * ((87 - Tf_HI) / 5)
 #meteoro["heat_index"] = np.where((RH <= 13) & (Tf >= 80) & (Tf <= 112),  meteoro["heat_index"] - ajuste1, None)
 #meteoro["heat_index"] = np.where((RH >= 85) & (Tf >= 80) & (Tf <= 87),  meteoro["heat_index"] - ajuste2, None)
 biometeoro = biometeoro[["data", "obito", "heat_index", "wind_chill",
-						"tmin_3h", "tmin", "temp", "tmax_3h", "tmax",
-						"amplitude_t_3h", "amplitude_t","urmin", "umidade", "urmax",
+						"tmin", "temp", "tmax",# "tmin_3h", "tmax_3h", "amplitude_t_3h",
+						"amplitude_t","urmin", "umidade", "urmax",
 						"prec", "pressao", "ventodir", "ventovel"]]
 print(80*"=")
 print(bio, bio.info())
