@@ -150,7 +150,7 @@ for idx, biometeoro0 in enumerate(periodos):
 	axs[1].set_xlabel("Série Temporal")
 	#fig.suptitle(f"CASOS DE DENGUE, FOCOS DE _Aedes_ sp., TEMPERATURAS (MÍNIMA, MÉDIA E MÁXIMA) E PRECIPITAÇÃO.\nSAZONALIDADE POR MÉDIAS SEMANAIS PARA O MUNICÍPIO DE biometeoro0, SANTA CATARINA.")
 	nome_arquivo = f"esbmet25_ciclo_anual_subplots_biometeoro0_{idx}.pdf"
-	caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/esbmet/"
+	caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/esbmet/"
 	#if _SALVAR == True:
 	os.makedirs(caminho_esbmet, exist_ok = True)
 	plt.savefig(f'{caminho_esbmet}{nome_arquivo}', format = "pdf", dpi = 300,  bbox_inches = "tight", pad_inches = 0.0)
@@ -224,7 +224,7 @@ plt.xticks(meses, nomes_meses)
 axs[1].set_xlabel("Ciclo Anual (dias)")
 #fig.suptitle(f"CASOS DE DENGUE, FOCOS DE _Aedes_ sp., TEMPERATURAS (MÍNIMA, MÉDIA E MÁXIMA) E PRECIPITAÇÃO.\nSAZONALIDADE POR MÉDIAS SEMANAIS PARA O MUNICÍPIO DE clima, SANTA CATARINA.")
 nome_arquivo = f"esbmet25_distribuicao_sazonal_subplots_diario.pdf"
-caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/esbmet/"
+caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/esbmet/"
 #if _SALVAR == True:
 os.makedirs(caminho_esbmet, exist_ok = True)
 plt.savefig(f'{caminho_esbmet}{nome_arquivo}', format = "pdf", dpi = 300,  bbox_inches = "tight", pad_inches = 0.0)
@@ -297,7 +297,7 @@ plt.xticks(meses, nomes_meses)
 axs[1].set_xlabel("Ciclo Anual (meses)")
 #fig.suptitle(f"CASOS DE DENGUE, FOCOS DE _Aedes_ sp., TEMPERATURAS (MÍNIMA, MÉDIA E MÁXIMA) E PRECIPITAÇÃO.\nSAZONALIDADE POR MÉDIAS SEMANAIS PARA O MUNICÍPIO DE clima_mes, SANTA CATARINA.")
 nome_arquivo = f"esbmet25_distribuicao_sazonal_subplots_mensal.pdf"
-caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/esbmet/"
+caminho_esbmet = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/esbmet/"
 #if _SALVAR == True:
 os.makedirs(caminho_esbmet, exist_ok = True)
 plt.savefig(f'{caminho_esbmet}{nome_arquivo}', format = "pdf", dpi = 300,  bbox_inches = "tight", pad_inches = 0.0)
