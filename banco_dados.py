@@ -202,6 +202,7 @@ biometeoro_inverno.set_index("data", inplace = True)
 print(f"\n{green}BIOMETEORO (INVERNO):\n{reset}{biometeoro_inverno}v\n")
 biometeoro_inverno = biometeoro_inverno[(biometeoro_inverno.index.month >= 6) & (biometeoro_inverno.index.month <= 8)]
 #biometeoro_inverno = biometeoro_inverno[biometeoro_inverno["data"].dt.month.isin(["06", "07", "08"])]
+biometeoro_inverno.reset_index(inplace = True)
 print(f"\n{green}BIOMETEORO (INVERNO):\n{reset}{biometeoro_inverno}v\n")
 #sys.exit()
 biometeoro_inverno.to_csv(f"{caminho_dados}biometeoro_inverno_{_cidade}.csv", index = False)
