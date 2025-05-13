@@ -40,70 +40,27 @@ cyan = "\033[36m"
 white = "\033[37m"
 reset = "\033[0m"
 #################################################################################
-
-### CONDIÇÕES PARA VARIAR ########################################
-##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
-_AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False      #####
-_VISUALIZAR = sys.argv[2]    # True|False                    #####
-_VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
-_SALVAR = sys.argv[3]        # True|False                    #####
-_SALVAR = True if _SALVAR == "True" else False               #####
-##################################################################
-##################################################################
-        
-_RETROAGIR = 7 # Dias
-
-cidade = "Porto Alegre"
-cidades = ["Porto Alegre"]
-_CIDADE = cidade.upper()
-troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
-         'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
-         'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
-         'Ó': 'O', 'Ô': 'O', 'Ò': 'O', 'Õ': 'O', 'Ö': 'O',
-         'Ú': 'U', 'Û': 'U', 'Ù': 'U', 'Ũ': 'U', 'Ü': 'U',
-         'Ç': 'C', " " : "_", "'" : "_", "-" : "_"}
-for velho, novo in troca.items():
-	_cidade = _CIDADE.replace(velho, novo)
-	_cidade = _cidade.replace(" ", "_")
-print(_cidade)
-#sys.exit()
-
-#########################################################################
-
 ### Encaminhamento aos Diretórios
 caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
-#caminho_indices = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
-#caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
-
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
-meteoro = "meteoro_porto_alegre.csv"
 clima = "climatologia.csv"
-#anomalia = "anomalia.csv"
-#bio = "obito_cardiovasc_total_poa_96-22.csv"
-bio = "obito_total_PORTO_ALEGRE.csv"
-#p75 = "serie_IAM3_porto_alegre.csv"
+biometeoro = "biometeoro_PORTO_ALEGRE.csv"
 
 ### Abrindo e Visualizando Arquivos
-# Série Histórica Meteorológica
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
-meteoro["data"] = pd.to_datetime(meteoro["data"])
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
+# Série Histórica Meteorológica com Óbitos
+biometeoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
+biometeoro["data"] = pd.to_datetime(biometeoro["data"])
+print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
 # Série Climatológica Diária
-
 clima = pd.read_csv(f"{caminho_dados}{clima}", low_memory = False)
 #clima["data"] = pd.to_datetime(clima["data"])
 print(f"\n{green}clima\n{reset}{clima}\n")
-# Série Histórica Óbitos
-bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
-bio["data"] = pd.to_datetime(bio["data"])
-print(f"\n{green}bio\n{reset}{bio}\n")
 
 ### Selecionando Variáveis e Pré-processando
-tmax = meteoro[["data", "tmax"]]
+tmax = biometeoro[["data", "tmax"]]
 tmax["dia"] = tmax["data"].dt.dayofyear
 tmax_media = tmax.groupby("dia")["tmax"].mean().round(2)
 tmax["tmax_clima"] = tmax["dia"].map(tmax_media)
@@ -111,7 +68,7 @@ print(f"\n{green}tmax\n{reset}{tmax}\n")
 tmax_clima = clima[["dia", "tmax"]]
 print(f"\n{green}tmax_clima\n{reset}{tmax_clima}\n")
 
-### Processando Ondas de Calor
+### Processando Ondas de Calor (acima 5 graus por 5 dias - 5.5)
 tmax["acima_5"] = tmax["tmax"] > (tmax["tmax_clima"] + 5)
 print(f"\n{green}tmax\n{reset}{tmax}\n")
 print(f"\n{green}Dias com temperatura máxima acima da média:\n{reset}{tmax['acima_5'].value_counts()}\n")
@@ -120,8 +77,8 @@ print(f"\n{green}tmax\n{reset}{tmax}\n")
 ondadecalor = tmax.groupby("agrupado").filter(lambda x: x["acima_5"].all() and len(x) >= 5)
 print(f"\n{green}ondadecalor\n{reset}{ondadecalor}\n")
 if not ondadecalor.empty:
-	onda_calor = ondadecalor[['data', 'tmax', 'tmax_clima']]
-	print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n")
+	onda_calor = ondadecalor[["data", "tmax", "tmax_clima"]]
+	print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n", print(onda_calor.columns))
 else:
 	print(f"\n{red}Nenhuma Onda de Calor Detectada!\n{reset}")
 onda_calor = onda_calor.copy()
@@ -129,9 +86,46 @@ onda_calor.loc[:, "acima"] = onda_calor["tmax"] - onda_calor["tmax_clima"]
 
 ### Concatenando Óbitos
 #onda_calor["obito"] = onda_calor["data"].map(bio["obitos"])
-onda_calor = onda_calor.merge(bio, how = "inner", on = "data")
+onda_calor = onda_calor.merge(biometeoro, how = "inner", on = "data")
 print(f"\n{green}onda_calor\n{reset}{onda_calor}\n")
-if _SALVAR == True:
-	nome_arquivo = "onda_calor_obito.csv"
-	onda_calor.to_csv(f"{caminho_dados}{nome_arquivo}",index = False)
-	print(f"\n{green}Salvo com Sucesso:\n{reset}{caminho_dados}{nome_arquivo}\n")
+onda_calor = onda_calor.drop(columns = "tmax_x")
+nome_arquivo = "onda_calor_obito_5.5.csv"
+onda_calor.rename(columns = {"tmax_y": "tmax"}, inplace = True)
+print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n", print(onda_calor.columns))
+onda_calor.to_csv(f"{caminho_dados}{nome_arquivo}",index = False)
+print(f"\n{green}Salvo com Sucesso:\n{reset}{caminho_dados}{nome_arquivo}\n")
+
+### Selecionando Variáveis e Pré-processando
+tmax = biometeoro[["data", "tmax"]]
+tmax["dia"] = tmax["data"].dt.dayofyear
+tmax_media = tmax.groupby("dia")["tmax"].mean().round(2)
+tmax["tmax_clima"] = tmax["dia"].map(tmax_media)
+print(f"\n{green}tmax\n{reset}{tmax}\n")
+tmax_clima = clima[["dia", "tmax"]]
+print(f"\n{green}tmax_clima\n{reset}{tmax_clima}\n")
+
+### Processando Ondas de Calor (acima 3 graus por 3 dias - 3.3)
+tmax["acima_3"] = tmax["tmax"] > (tmax["tmax_clima"] + 3)
+print(f"\n{green}tmax\n{reset}{tmax}\n")
+print(f"\n{green}Dias com temperatura máxima acima da média:\n{reset}{tmax['acima_3'].value_counts()}\n")
+tmax["agrupado"] = (tmax["acima_3"] != tmax["acima_3"].shift()).cumsum()
+print(f"\n{green}tmax\n{reset}{tmax}\n")
+ondadecalor = tmax.groupby("agrupado").filter(lambda x: x["acima_3"].all() and len(x) >= 3)
+print(f"\n{green}ondadecalor\n{reset}{ondadecalor}\n")
+if not ondadecalor.empty:
+	onda_calor = ondadecalor[["data", "tmax", "tmax_clima"]]
+	print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n", print(onda_calor.columns))
+else:
+	print(f"\n{red}Nenhuma Onda de Calor Detectada!\n{reset}")
+onda_calor = onda_calor.copy()
+onda_calor.loc[:, "acima"] = onda_calor["tmax"] - onda_calor["tmax_clima"]
+
+### Concatenando Óbitos
+onda_calor = onda_calor.merge(biometeoro, how = "inner", on = "data")
+onda_calor = onda_calor.drop(columns = "tmax_x")
+print(f"\n{green}onda_calor\n{reset}{onda_calor}\n")
+nome_arquivo = "onda_calor_obito_3.3.csv"
+onda_calor.rename(columns = {"tmax_y": "tmax"}, inplace = True)
+print(f"\n{green}Onda de Calor:\n{reset}{onda_calor}\n", print(onda_calor.columns))
+onda_calor.to_csv(f"{caminho_dados}{nome_arquivo}",index = False)
+print(f"\n{green}Salvo com Sucesso:\n{reset}{caminho_dados}{nome_arquivo}\n")

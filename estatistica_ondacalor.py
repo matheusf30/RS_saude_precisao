@@ -25,18 +25,7 @@ cyan = "\033[36m"
 white = "\033[37m"
 reset = "\033[0m"
 #################################################################################
-"""
-### CONDIÇÕES PARA VARIAR ########################################
-##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
-_AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False      #####
-_VISUALIZAR = sys.argv[2]    # True|False                    #####
-_VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
-_SALVAR = sys.argv[3]        # True|False                    #####
-_SALVAR = True if _SALVAR == "True" else False               #####
-##################################################################
-##################################################################
-"""   
+
 _RETROAGIR = 7 # Dias
 
 cidade = "Porto Alegre"
@@ -59,86 +48,84 @@ print(_cidade)
 ### Encaminhamento aos Diretórios
 caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
 caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
+verao = "biometeoro_verao_PORTO_ALEGRE.csv"
+inverno = "biometeoro_inverno_PORTO_ALEGRE.csv"
 
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
-meteoro = "meteoro_porto_alegre.csv"
 clima = "climatologia.csv"
-#anomalia = "anomalia.csv"
-#bio = "obito_cardiovasc_total_poa_96-22.csv"
-bio = "obito_total_PORTO_ALEGRE.csv"
-onda = "onda_calor_obito.csv"
-#p75 = "serie_IAM3_porto_alegre.csv"
+biometeoro = "biometeoro_PORTO_ALEGRE.csv"
+onda3 = "onda_calor_obito_3.3.csv"
+onda5 = "onda_calor_obito_5.5.csv"
 
 ### Abrindo e Visualizando Arquivos
-# Série Histórica Meteorológica
-meteoro = pd.read_csv(f"{caminho_dados}{meteoro}", low_memory = False)
-meteoro["data"] = pd.to_datetime(meteoro["data"])
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
 # Série Histórica de Óbitos Cardiovasculares
-bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
-bio["data"] = pd.to_datetime(bio["data"])
-print(f"\n{green}bio\n{reset}{bio}\n")
-# Série Histórica de Ondas de Calor
-onda = pd.read_csv(f"{caminho_dados}{onda}", low_memory = False)
-onda["data"] = pd.to_datetime(onda["data"])
-#onda["acima"] = onda["tmax"] - onda ["tmax_clima"]
-print(f"\n{green}Menores TMAX\n{reset}{onda.where(onda['tmax'] <= 25).dropna()}\n")
-print(f"\n{green}onda de calor\n{reset}{onda}\n")
-
-### Concatenando Meteorologia e Óbitos
-biometeoro = meteoro.merge(bio, how = "inner", on = "data")
+biometeoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
 biometeoro["data"] = pd.to_datetime(biometeoro["data"])
-nome_arquivo = f"biometeoro_{_cidade}.csv"
-biometeoro.to_csv(f"{caminho_dados}{nome_arquivo}",index = False)
-print(f"\n{green}Salvo com Sucesso:\n{reset}{caminho_dados}{nome_arquivo}\n")
 print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
+# Série Histórica de Ondas de Calor
+onda3 = pd.read_csv(f"{caminho_dados}{onda3}", low_memory = False)
+onda3["data"] = pd.to_datetime(onda3["data"])
+# Série Histórica de Ondas de Calor
+onda5 = pd.read_csv(f"{caminho_dados}{onda5}", low_memory = False)
+onda5["data"] = pd.to_datetime(onda5["data"])
+print(f"\n{green}onda 3.3\n{reset}{onda3}\n")
+print(f"\n{green}onda 5.5\n{reset}{onda5}\n")
+
+print(f"\n{green}Menores TMAX 3.3\n{reset}{onda3.where(onda3['tmax'] <= 25).dropna()}\n")
+print(f"\n{green}onda de calor (acima 3 ºC, ao menos 3 dias)\n{reset}{onda3}\n")
+print(f"\n{green}Menores TMAX 5.5\n{reset}{onda5.where(onda5['tmax'] <= 25).dropna()}\n")
+print(f"\n{green}onda de calor (acima 5 ºC, ao menos 5 dias)\n{reset}{onda5}\n")
+# VERÃO
+verao = pd.read_csv(f"{caminho_dados}{verao}", low_memory = False)
+verao["data"] = pd.to_datetime(verao["data"])
+verao = verao.copy()
+print(f"\n{green}PERÍODO SELECIONADO: VERÃO (DJF)\n{reset}{verao}\n{verao.info()}\n{verao.describe()}\n")
+# INVERNO
+inverno = pd.read_csv(f"{caminho_dados}{inverno}", low_memory = False)
+inverno["data"] = pd.to_datetime(inverno["data"])
+inverno = inverno.copy()
+print(f"\n{green}PERÍODO SELECIONADO: INVERNO (JJA)\n{reset}{inverno}\n{inverno.info()}\n{inverno.describe()}\n")
 
 ### Estatística Descritiva
-print(f"\n{green}Onda de calor\n{reset}{onda.describe()}\n")
+print(f"\n{green}Onda de calor (acima 3 ºC, ao menos 3 dias)\n{reset}{onda3.describe()}\n")
+print(f"\n{green}Onda de calor (acima 5 ºC, ao menos 5 dias)\n{reset}{onda5.describe()}\n")
 print(f"\n{green}Biometeorologia\n{reset}{biometeoro.describe()}\n")
-#onda[["tmax", "tmax_clima", "obitos"]].plot()
-#plt.show()
 
-inverno = onda.copy()
-inverno["dia"] = inverno["data"]
-inverno.set_index("dia", inplace = True)
-inverno.index = pd.to_datetime(inverno.index)
-inverno = inverno[(inverno.index.month >= 6) & (inverno.index.month <= 8)]
-inverno.reset_index(inplace = True)
-inverno.drop(columns = "dia", inplace = True)
-print(f"\n{green}PERÍODO SELECIONADO: INVERNO (JJA)\n{reset}{inverno}\n{inverno.info()}\n{inverno.describe()}\n")
-verao = onda.copy()
-verao["dia"] = verao["data"]
-verao.set_index("dia", inplace = True)
-verao.index = pd.to_datetime(verao.index)
-verao = verao[(verao.index.month == 12) | (verao.index.month <= 2)]
-verao.reset_index(inplace = True)
-verao.drop(columns = "dia", inplace = True)
-print(f"\n{green}PERÍODO SELECIONADO: VERÃO (DJF)\n{reset}{verao}\n{verao.info()}\n{verao.describe()}\n")
-
-# Visualizando Ondas de Calor
+### Visualizando Ondas de Calor
+# Básico
+"""
+biometeoro[["tmax", "obito"]].plot()
+plt.show()
+sys.exit()
+"""
+# Com Ondas de Calor
 plt.figure(figsize = (10, 6), layout = "tight", frameon = False)
-biometeoro[["tmax", "obitos"]].plot()
-"""
-sns.lineplot(y = biometeoro["obitos"], label = "Óbito", #x = biometeoro["data"]
-				color = "black", linewidth = 1, alpha = 0.7 )
+
+sns.lineplot(x = biometeoro["data"], y = biometeoro["obito"], label = "Óbito",
+				color = "black", linewidth = 1, alpha = 0.5 )
 sns.lineplot(x = biometeoro["data"], y = biometeoro["tmax"], label = "Temperatura Máxima",
-				color = "black", linewidth = 1, alpha = 0.7 )
-"""
-sns.scatterplot(x = verao["data"], y = verao["obitos"],
-				color = "purple", marker = "o", alpha = 0.7,
-				label = "Óbito em Onda de Calor")
-sns.scatterplot(x = verao["data"], y = verao["tmax_clima"], #scatter
-				color = "orange", marker = "o", alpha = 0.7,
-				label = "Temperatura Esperada (Média da Temperatura Máxima Diária)")
+				color = "red", linewidth = 1, alpha = 0.7 )
+sns.scatterplot(x = onda3["data"], y = onda3["obito"],
+				color = "blue", marker = "o",# alpha = 0.7,
+				label = "Óbito em Onda de Calor (acima 3 ºC, ao menos 3 dias)")
+sns.scatterplot(x = onda3["data"], y = onda3["tmax_clima"],
+				color = "blue", marker = "o",# alpha = 0.7,
+				label = "Temperatura em Onda de Calor (acima 3 ºC, ao menos 3 dias)")
+sns.scatterplot(x = onda5["data"], y = onda5["obito"], #scatter
+				color = "purple", marker = "D",# alpha = 0.7,
+				label = "Óbito em Onda de Calor (acima 5 ºC, ao menos 5 dias)")
+sns.scatterplot(x = onda5["data"], y = onda5["tmax_clima"],
+				color = "purple", marker = "D",# alpha = 0.7,
+				label = "Temperatura em Onda de Calor (acima 5 ºC, ao menos 5 dias)")
 plt.legend()
 plt.title("DISTRIBUIÇÃO DE ÓBITOS CARDIOVASCULARES E ONDAS DE CALOR.\nMUNICÍPIO DE PORTO ALEGRE, RIO GRANDE DO SUL.")
 plt.xlabel("Série Histórica (Observação Diária)")
 plt.ylabel("Número de Óbitos Cardiovasculares x Temperatura Máxima")
 plt.show()
 sys.exit()
+
 if _SALVAR == "True":
 	caminho_onda = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/ondacalor/"
 	os.makedirs(caminho_onda, exist_ok = True)
