@@ -50,8 +50,6 @@ _SALVAR = True if _SALVAR == "True" else False               #####
         
 _RETROAGIR = 7 # Dias
 _HORIZONTE = 0 # Tempo de Previsão
-_JANELA_MM = 0 # Média Móvel
-_K = 0 # constante para formar MM
 
 cidade = "Porto Alegre"
 cidades = ["Porto Alegre"]
@@ -119,43 +117,15 @@ def monta_dataset(dataset):
 	print(f"\n{green}dataset_montado.info():\n{reset}{dataset_montado.info()}\n")
 	return dataset_montado
 
-def seleciona_periodo(dataset, str_periodo):
-	dataset_periodo = dataset.copy()
-	dataset_periodo.reset_index(inplace = True)
-	dataset_periodo["data"] = pd.to_datetime(dataset_periodo["data"], errors = "coerce")
-	dataset_periodo.set_index("data", inplace = True)
-	print(f"\n{red}PERÍODO {green}{str_periodo.upper()} {red}SELECIONADO:\n{reset}{dataset_periodo}\n{dataset_periodo.info()}\n")
-	if str_periodo == "quente":
-		dataset_periodo = dataset_periodo[(dataset_periodo.index.month >= 10) & (dataset_periodo.index.month <= 3)]
-	elif str_periodo == "frio":
-		dataset_periodo = dataset_periodo[(dataset_periodo.index.month >= 5) & (dataset_periodo.index.month <= 9)]
-	#dataset_periodo.reset_index(inplace = True)
-	#dataset_periodo.drop(columns = "dia", inplace = True)
-	#dataset_periodo.set_index("data", inplace = True)
-	print(f"\n{green}PERÍODO {red}{str_periodo.upper()} {green}SELECIONADO:\n{reset}{dataset_periodo}\n{dataset_periodo.info()}\n")
-	return dataset_periodo	
-
-def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
+def treino_teste(dataset, cidade, tamanho_teste = 0.2):
 	SEED = np.random.seed(0)
-	if n_dataset == 1:
-		x = dataset.drop(columns = ["data", "obito"])
-		y = dataset["obito"]
-	elif n_dataset == 2:
-		x = dataset.drop(columns = "totalp75")
-		y = dataset["totalp75"]
-	elif n_dataset == 3:
-		x = dataset.drop(columns = "infarto_agudo_miocardio")
-		y = dataset["infarto_agudo_miocardio"]
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	x = dataset.drop(columns = ["obito"])
+	y = dataset["obito"]
 	print(f"\n{green}x:\n{reset}{x}\n")
 	print(f"\n{green}y:\n{reset}{y}\n")	
-	#x_array = x.to_numpy()
-	#x_array = x_array.reshape(x_array.shape[0], -1)
 	x_array = x.to_numpy().astype(int)
 	y_array = y.to_numpy().astype(float)
-	#x_array = x_array.reshape(x_array.shape[0], -1)
-	treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array, # x_array, y_array, x, y, 
+	treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array, 
 		                                                random_state = SEED,
 		                                                test_size = tamanho_teste)
 	explicativas = x.columns.tolist()
@@ -182,18 +152,11 @@ def RF_modela_treina_preve(x, treino_x_explicado, treino_y, teste_x, SEED):
 	print(f"\n{green}previsoes:\n{reset}{previsoes}\n")
 	return modelo, y_previsto, previsoes
 
-def RF_previsao_metricas(n_dataset, dataset, previsoes, n, teste_y, y_previsto):
+def RF_previsao_metricas(dataset, previsoes, n, teste_y, y_previsto):
 	nome_modelo = "Random Forest"
 	print("="*80)
 	print(f"\n{nome_modelo.upper()} - {cidade}\n")
-	if n_dataset == 1:
-		lista_op = [f"obitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
-	elif n_dataset == 2:
-		lista_op = [f"totalp75: {dataset['totalp75'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
-	elif n_dataset == 3:
-		lista_op = [f"Infarto Agudo: {dataset['infarto_agudo_miocardio'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	lista_op = [f"obitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
 	print("\n".join(lista_op))
 	print("~"*80)
 	EQM = mean_squared_error(teste_y, y_previsto)
@@ -222,23 +185,13 @@ def lista_previsao(previsao, n, string_modelo):
 	print("\n".join(lista_op))
 	print("="*80)
 
-def grafico_previsao(n_dataset, dataset, previsao, R_2):
-	# Gráfico de Comparação entre Observação e Previsão dos Modelos
+def grafico_previsao(dataset, previsao):
 	nome_modelo = "Random Forest"
 	final = pd.DataFrame()
 	dataset.reset_index(inplace = True)
 	final["Data"] = dataset["data"]
-	if n_dataset == 1:
-		final["obito"] = dataset["obito"]
-		nome_arquivo = "totais"
-	elif n_dataset == 2:
-		final["obito"] = dataset["totalp75"]
-		nome_arquivo = "totalp75"
-	elif n_dataset == 3:
-		final["obito"] = dataset["infarto_agudo_miocardio"]
-		nome_arquivo = "I219"
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	final["obito"] = dataset["obito"]
+	nome_arquivo = "totais"
 	final.reset_index(inplace = True)
 	final.drop(columns = "index", inplace = True)
 	print(final)
@@ -258,7 +211,7 @@ def grafico_previsao(n_dataset, dataset, previsao, R_2):
 		     	color = "darkblue", linewidth = 1, label = "Observado")
 	sns.lineplot(x = final["Data"], y = final["Previstos"],
 		     	color = "red", alpha = 0.7, linewidth = 3, label = "Previsto")
-	plt.title(f"MODELO {nome_modelo.upper()} (R²: {R_2}): OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
+	plt.title(f"MODELO {nome_modelo.upper()}: OBSERVAÇÃO E PREVISÃO.\n MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	plt.xlabel("Série Histórica (Observação Diária)")
 	plt.ylabel(f"Número de Óbitos Cardiovasculares ({nome_arquivo})")
 	troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
@@ -301,7 +254,7 @@ def metricas(string_modelo, modeloNN = None):
 				\n Raiz Quadrada do Erro Quadrático Médio: {RQ_EQM_RF}
 				""")
 
-def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
+def metricas_importancias(modeloRF, explicativas, teste_x, teste_y):
 	importancias = modeloRF.feature_importances_
 	importancias = importancias.round(4)
 	indices = np.argsort(importancias)[::-1]
@@ -314,14 +267,7 @@ def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_impureza = importancia_impureza.sort_values(ascending = False)
 	importancia_impureza[:10].plot.bar(yerr = std[:10], ax = ax)
-	if n_dataset == 1:
-		nome_arquivo = "totais"
-	elif n_dataset == 2:
-		nome_arquivo = "totalp75"
-	elif n_dataset == 3:
-		nome_arquivo = "I219"
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	nome_arquivo = "totais"
 	ax.set_title(f"VARIÁVEIS IMPORTANTES PARA MODELO RANDOM FOREST\nMUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Perda de Impureza Média")
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
@@ -345,14 +291,7 @@ def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 	std = resultado_permuta.importances_std
 	fig, ax = plt.subplots(figsize = (10, 6), layout = "tight", frameon = False)
 	importancia_permuta[:10].plot.bar(yerr = std[:10], ax = ax)
-	if n_dataset == 1:
-		nome_arquivo = f"totais"
-	elif n_dataset == 2:
-		nome_arquivo = f"totalp75"
-	elif n_dataset == 3:
-		nome_arquivo = f"I219"
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	nome_arquivo = f"totais"
 	ax.set_title(f"VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO ({n_permuta})\nMUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel("Acurácia Média")
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
@@ -372,24 +311,11 @@ def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 	print(f"\n{green}VARIÁVEIS IMPORTANTES UTILIZANDO PERMUTAÇÃO:\n{reset}{importancia_permuta}")
 	return importancias, indices, variaveis_importantes
 
-def metrica_shap(n_dataset, modelo, treino_x, teste_x):
+def metrica_shap(modelo, treino_x, teste_x):
 	expl_shap = shap.Explainer(modelo, treino_x)
 	valor_shap = expl_shap(teste_x)
-	nome_treino_x = treino_x.T
-	nome_treino_x.reset_index(inplace = True)
-	nome_treino_x = nome_treino_x.iloc[:,:1]
-	nome_treino_x = nome_treino_x.rename(columns = {"index" : "variavel"})
-	nome_treino_x["indice"] = [f"Feature {i}" for i in range(0, len(nome_treino_x))]
-	nome_treino_x = nome_treino_x[["indice", "variavel"]]
-	plt.figure(figsize = (10, 6)).set_layout_engine(None)#, layout = "constrained", frameon = False).set_layout_engine(None)
-	if n_dataset == 1:
-		nome_arquivo = "totais"
-	elif n_dataset == 2:
-		nome_arquivo = "totalp75"
-	elif n_dataset == 3:
-		nome_arquivo = "I219"
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	plt.figure(figsize = (10, 6)).set_layout_engine(None)
+	nome_arquivo = "totais"
 	ax = plt.gca()
 	ax.set_title(f"SHAP (SHapley Additive exPlanations) PARA MODELO RANDOM FOREST\n({nome_arquivo}), MUNICÍPIO DE {cidade.upper()}, RIO GRANDE DO SUL.\n")
 	ax.set_ylabel(f"Valor SHAP ({nome_arquivo})")
@@ -402,6 +328,12 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	if _SALVAR == True:
 		plt.savefig(f"{caminho_resultados}{nome_arquivo_pdf}", format = "pdf", dpi = 1200)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_pdf}{reset}")
+		nome_treino_x = treino_x.T
+		nome_treino_x.reset_index(inplace = True)
+		nome_treino_x = nome_treino_x.iloc[:,:1]
+		nome_treino_x = nome_treino_x.rename(columns = {"index" : "variavel"})
+		nome_treino_x["indice"] = [f"Feature {i}" for i in range(0, len(nome_treino_x))]
+		nome_treino_x = nome_treino_x[["indice", "variavel"]]
 		nome_treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_csv}{reset}")
 	if _VISUALIZAR == True:
@@ -440,17 +372,10 @@ def caminho_decisao(x, modelo, explicativas):
 		#print("\n\nCAMINHO DE DECISÃO\n\n", caminho_denso)
 		return unica_arvore, relatorio_decisao #amostra, caminho, caminho_denso
 
-def salva_modeloRF(n_dataset, modelo, cidade):
+def salva_modeloRF(modelo, cidade):
 	if not os.path.exists(caminho_modelos):
 		os.makedirs(caminho_modelos)
-	if n_dataset == 1:
-		nome_arquivo = f"RF_obitos_r{_RETROAGIR}_{_cidade}.h5"
-	elif n_dataset == 2:
-		nome_arquivo = f"RF_totalp75_r{_RETROAGIR}_{_cidade}.h5"
-	elif n_dataset == 3:
-		nome_arquivo = f"RF_I219_r{_RETROAGIR}_{_cidade}.h5"
-	else:
-		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	nome_arquivo = f"RF_obitos_r{_RETROAGIR}_{_cidade}.h5"
 	joblib.dump(modelo, f"{caminho_modelos}{nome_arquivo}")
 	print(f"\n{green}MODELO RANDOM FOREST DE {cidade} SALVO!\n{reset}")
 	print(f"\n{green}Caminho e Nome:\n{bold} {caminho_modelos}{nome_arquivo}\n{reset}")
@@ -466,13 +391,14 @@ caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/po
 if not os.path.exists(caminho_modelos):
 	os.makedirs(caminho_modelos)		
 dataset = dataset_original.copy()
-x, y, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, df, explicativas, SEED = treino_teste(1, dataset, cidade) # 1 = "obitos"
+dataset_montado = monta_dataset(dataset)
+x, y, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, df, explicativas, SEED = treino_teste(dataset_montado, cidade)
 modelo, y_previsto, previsoes = RF_modela_treina_preve(x, treino_x_explicado, treino_y, teste_x, SEED)
-EQM, RQ_EQM, R_2 = RF_previsao_metricas(1, dataset, previsoes, 5, teste_y, y_previsto)
-grafico_previsao(1, biometeoro, previsoes, R_2)
-metricas_importancias(1, modelo, explicativas, teste_x, teste_y)
-metrica_shap(1, modelo, df, teste_x)
-salva_modeloRF(1, modelo, _cidade)
+EQM, RQ_EQM, R_2 = RF_previsao_metricas(dataset, previsoes, 5, teste_y, y_previsto)
+grafico_previsao(biometeoro, previsoes)
+metricas_importancias(modelo, explicativas, teste_x, teste_y)
+metrica_shap(modelo, df, teste_x)
+salva_modeloRF(modelo, _cidade)
 
 ######################################################################################################################################
 
