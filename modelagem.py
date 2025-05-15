@@ -187,7 +187,7 @@ def RF_previsao_metricas(n_dataset, dataset, previsoes, n, teste_y, y_previsto):
 	print("="*80)
 	print(f"\n{nome_modelo.upper()} - {cidade}\n")
 	if n_dataset == 1:
-		lista_op = [f"obitos: {dataset['obitos'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
+		lista_op = [f"obitos: {dataset['obito'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
 	elif n_dataset == 2:
 		lista_op = [f"totalp75: {dataset['totalp75'][i]}\nPrevisão {nome_modelo}: {previsoes[i]}\n" for i in range(n)]
 	elif n_dataset == 3:
@@ -473,13 +473,8 @@ metricas_importancias(1, modelo, explicativas, teste_x, teste_y)
 caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
 if not os.path.exists(caminho_shap):
 	os.makedirs(caminho_shap)
-metrica_shap(1, modelo1, df1, teste_x1)
-metrica_shap(2, modelo2, df2, teste_x2)
-metrica_shap(3, modelo3, df3, teste_x3)
-#sys.exit()
-salva_modeloRF(1, modelo1, cidade)
-salva_modeloRF(2, modelo2, cidade)
-salva_modeloRF(3, modelo3, cidade)
+metrica_shap(1, modelo, df, teste_x)
+salva_modeloRF(1, modelo, _cidade)
 
 ######################################################################################################################################
 
