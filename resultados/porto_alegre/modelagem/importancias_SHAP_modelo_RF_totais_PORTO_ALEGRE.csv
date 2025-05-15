@@ -1,14 +1,14 @@
 indice,variavel
-0,heat_index
-1,wind_chill
-2,tmin
-3,temp
-4,tmax
-5,amplitude_t
-6,urmin
-7,umidade
-8,urmax
-9,prec
-10,pressao
-11,ventodir
-12,ventovel
+Feature 0,heat_index
+Feature 1,wind_chill
+Feature 2,tmin
+Feature 3,temp
+Feature 4,tmax
+Feature 5,amplitude_t
+Feature 6,urmin
+Feature 7,umidade
+Feature 8,urmax
+Feature 9,prec
+Feature 10,pressao
+Feature 11,ventodir
+Feature 12,ventovel

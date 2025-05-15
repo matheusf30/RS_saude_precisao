@@ -229,7 +229,7 @@ def grafico_previsao(n_dataset, dataset, previsao, R_2):
 	dataset.reset_index(inplace = True)
 	final["Data"] = dataset["data"]
 	if n_dataset == 1:
-		final["obito"] = dataset["obitos"]
+		final["obito"] = dataset["obito"]
 		nome_arquivo = "totais"
 	elif n_dataset == 2:
 		final["obito"] = dataset["totalp75"]
@@ -272,7 +272,7 @@ def grafico_previsao(n_dataset, dataset, previsao, R_2):
 		_cidade = _cidade.replace(velho, novo)
 	nome_arquivo = f"modelo_RF_{nome_arquivo}_{_cidade}.pdf"
 	if _SALVAR == True:
-		plt.savefig(f'{caminho_resultados}{nome_arquivo}', format = "pdf", dpi = 1200)
+		plt.savefig(f"{caminho_resultados}{nome_arquivo}", format = "pdf", dpi = 1200)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
 	if _VISUALIZAR == True:	
 		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
@@ -375,6 +375,12 @@ def metricas_importancias(n_dataset, modeloRF, explicativas, teste_x, teste_y):
 def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	expl_shap = shap.Explainer(modelo, treino_x)
 	valor_shap = expl_shap(teste_x)
+	nome_treino_x = treino_x.T
+	nome_treino_x.reset_index(inplace = True)
+	nome_treino_x = nome_treino_x.iloc[:,:1]
+	nome_treino_x = nome_treino_x.rename(columns = {"index" : "variavel"})
+	nome_treino_x["indice"] = [f"Feature {i}" for i in range(0, len(nome_treino_x))]
+	nome_treino_x = nome_treino_x[["indice", "variavel"]]
 	plt.figure(figsize = (10, 6)).set_layout_engine(None)#, layout = "constrained", frameon = False).set_layout_engine(None)
 	if n_dataset == 1:
 		nome_arquivo = "totais"
@@ -390,19 +396,13 @@ def metrica_shap(n_dataset, modelo, treino_x, teste_x):
 	ax.set_xlabel(f"Variáveis Explicativas para Modelagem de Óbitos Cardiovasculares ({nome_arquivo})")
 	ax.set_facecolor("honeydew")
 	plt.rcParams.update({"figure.autolayout" : False})
-	shap.summary_plot(valor_shap, teste_x)#, legacy_colorbar = True)
+	shap.summary_plot(valor_shap, teste_x, feature_names = list(treino_x.columns))#, legacy_colorbar = True)
 	nome_arquivo_pdf = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.pdf"
 	nome_arquivo_csv = f"importancias_SHAP_modelo_RF_{nome_arquivo}_{_cidade}.csv"
 	if _SALVAR == True:
 		plt.savefig(f"{caminho_resultados}{nome_arquivo_pdf}", format = "pdf", dpi = 1200)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_pdf}{reset}")
-		treino_x = treino_x.T
-		treino_x.reset_index(inplace = True)
-		treino_x = treino_x.iloc[:,:1]
-		treino_x = treino_x.rename(columns = {"index" : "variavel"})
-		treino_x["indice"] = range(0, len(treino_x))
-		treino_x = treino_x[["indice", "variavel"]]
-		treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
+		nome_treino_x.to_csv(f"{caminho_resultados}{nome_arquivo_csv}", index = False)
 		print(f"{green}\nSALVANDO:\n{caminho_resultados}{nome_arquivo_csv}{reset}")
 	if _VISUALIZAR == True:
 		print(f"{green}\nVISUALIZANDO:\n{caminho_resultados}{nome_arquivo}{reset}")
@@ -469,10 +469,8 @@ dataset = dataset_original.copy()
 x, y, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, df, explicativas, SEED = treino_teste(1, dataset, cidade) # 1 = "obitos"
 modelo, y_previsto, previsoes = RF_modela_treina_preve(x, treino_x_explicado, treino_y, teste_x, SEED)
 EQM, RQ_EQM, R_2 = RF_previsao_metricas(1, dataset, previsoes, 5, teste_y, y_previsto)
+grafico_previsao(1, biometeoro, previsoes, R_2)
 metricas_importancias(1, modelo, explicativas, teste_x, teste_y)
-caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
-if not os.path.exists(caminho_shap):
-	os.makedirs(caminho_shap)
 metrica_shap(1, modelo, df, teste_x)
 salva_modeloRF(1, modelo, _cidade)
 
