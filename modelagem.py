@@ -17,7 +17,7 @@ from imblearn.over_sampling import SMOTE, RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error, accuracy_score, r2_score#, RocCurveDisplay
+from sklearn.metrics import mean_squared_error, accuracy_score, r2_score
 from sklearn.inspection import permutation_importance
 matplotlib.use("Agg")
 import shap
@@ -26,7 +26,6 @@ print(f"shap.__version__ = {shap.__version__}") #0.46.0
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
 from sklearn.tree import export_graphviz, export_text, plot_tree
-#from sklearn.utils.graph import single_source_shortest_path_lenght as short_path
 
 ##### Padrão ANSI ###############################################################
 bold = "\033[1m"
@@ -42,11 +41,9 @@ reset = "\033[0m"
 
 ### CONDIÇÕES PARA VARIAR ########################################
 ##################### Valores Booleanos ############ # sys.argv[0] is the script name itself and can be ignored!
-_AUTOMATIZAR = sys.argv[1]   # True|False                    #####
-_AUTOMATIZAR = True if _AUTOMATIZAR == "True" else False     #####
-_VISUALIZAR = sys.argv[2]    # True|False                    #####
+_VISUALIZAR = sys.argv[1]    # True|False                    #####
 _VISUALIZAR = True if _VISUALIZAR == "True" else False       #####
-_SALVAR = sys.argv[3]        # True|False                    #####
+_SALVAR = sys.argv[2]        # True|False                    #####
 _SALVAR = True if _SALVAR == "True" else False               #####
 ##################################################################
 ##################################################################
@@ -59,15 +56,7 @@ _K = 0 # constante para formar MM
 cidade = "Porto Alegre"
 cidades = ["Porto Alegre"]
 _CIDADE = cidade.upper()
-troca = {'Á': 'A', 'Â': 'A', 'À': 'A', 'Ã': 'A', 'Ä': 'A',
-         'É': 'E', 'Ê': 'E', 'È': 'E', 'Ẽ': 'E', 'Ë': 'E',
-         'Í': 'I', 'Î': 'I', 'Ì': 'I', 'Ĩ': 'I', 'Ï': 'I',
-         'Ó': 'O', 'Ô': 'O', 'Ò': 'O', 'Õ': 'O', 'Ö': 'O',
-         'Ú': 'U', 'Û': 'U', 'Ù': 'U', 'Ũ': 'U', 'Ü': 'U',
-         'Ç': 'C', " " : "_", "'" : "_", "-" : "_"}
-for velho, novo in troca.items():
-	_cidade = _CIDADE.replace(velho, novo)
-	_cidade = _cidade.replace(" ", "_")
+_cidade = _CIDADE.replace(" ", "_")
 print(_cidade)
 #sys.exit()
 
@@ -78,304 +67,42 @@ caminho_dados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/dados/"
 caminho_indices = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indices/"
 caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/"
 caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
-caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/"
+caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/modelos/"
 
 print(f"\nOS DADOS UTILIZADOS ESTÃO ALOCADOS NOS SEGUINTES CAMINHOS:\n\n{caminho_dados}\n\n")
 
 ### Renomeação das Variáveis pelos Arquivos
-meteoro = "meteoro_porto_alegre.csv"
 clima = "climatologia.csv"
 anomalia = "anomalia.csv"
+anomalia_estacionaria = "anomalia_estacionaria.csv"
 bio = "obito_cardiovasc_total_poa_96-22.csv"
-p75 = "serie_IAM3_porto_alegre.csv"
 biometeoro = "biometeoro_PORTO_ALEGRE.csv"
 
 
 ### Abrindo Arquivo e Pré-processamento
-# Meteoro
-meteoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
-meteoro["data"] = pd.to_datetime(meteoro["data"])
 clima = pd.read_csv(f"{caminho_dados}{clima}", low_memory = False)
 anomalia = pd.read_csv(f"{caminho_dados}{anomalia}", low_memory = False)
-### ÍNDICES DE AMPLITUDE TÉRMICA
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
-meteoro["indice_amplitude_up"] = meteoro["amplitude_t"] ** 2
-meteoro["indice_amplitude_down"] = (1 / meteoro["amplitude_t"]) ** 2
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
-### ANOMALIAS ESTACIONÁRIAS
-sazonal = meteoro.copy()
-sazonal["data"] = pd.to_datetime(sazonal["data"]).dt.date
-sazonal = sazonal.astype({"data": "datetime64[ns]"})
-sazonal["dia"] = sazonal["data"].dt.dayofyear
-print(f"\n{green}sazonal\n{reset}{sazonal}\n")
-colunas_sazonal = sazonal.drop(columns = "data")
-colunas = colunas_sazonal.columns
-media_dia = sazonal.groupby("dia")[colunas].mean().round(2)
-media_dia.to_csv(f"{caminho_dados}climatologia.csv", index = True)
-print(f"\n{green}SALVO COM SUCESSO!\nCLIMATOLOGIA.csv\n{reset}")
-#media_dia.reset_index(inplace = True)
-print(f"\n{green}media_dia\n{reset}{media_dia}\n{green}media_dia.index\n{reset}{media_dia.index}")
-print(f"\n{green}sazonal\n{reset}{sazonal}\n")
-componente_sazonal = sazonal.merge(media_dia, left_on = "dia", how = "left", suffixes = ("", "_media"), right_index = True)
-sem_sazonal = pd.DataFrame(index = sazonal.index)
-dias = componente_sazonal["dia"]
-componente_sazonal.drop(columns = "dia", inplace = True)
-print(f"{green}componente_sazonal\n{reset}{componente_sazonal}")
-for coluna in colunas:
-		if coluna in componente_sazonal.columns:
-			media_coluna = f"{coluna}_media"
-			if media_coluna in componente_sazonal.columns:
-				sem_sazonal[coluna] = sazonal[coluna] - componente_sazonal[media_coluna]
-			else:
-				print(f"{red}Coluna {media_coluna} não encontrada no componente sazonal!{reset}")
-		else:
-			print(f"{red}Coluna {coluna} não encontrada no csv!{reset}")
-sem_sazonal["dia"] = dias
-sem_sazonal.dropna(inplace = True)
-print(f"\n{green}sem_sazonal\n{reset}{sem_sazonal}\n")
-print(f"\n{green}sem_sazonal.columns\n{reset}{sem_sazonal.columns}\n")
-sem_sazonal.to_csv(f"{caminho_dados}anomalia.csv", index = True)
-print(f"\n{green}SALVO COM SUCESSO!\nANOMALIA.csv\n{reset}")
-colunas_anomalia = sem_sazonal.drop(columns = ["dia"])
-sem_sazonal.dropna(axis = 1, inplace = True)
-colunas = colunas_anomalia.columns
-anomalia_estacionaria = pd.DataFrame()
-anomalia_estacionaria["dia"] = dias
-for c in colunas:
-	if len(sem_sazonal[c]) > 1:
-		tendencia = mk.original_test(sem_sazonal[c])
-		print(f"{cyan}\nVARIÁVEL\n{c.upper()}{reset}\n")
-		print(f"\n{green}sem_sazonal[c]\n{reset}{sem_sazonal[c]}\n")
-		print(f"\n{green}tendencia\n{reset}{tendencia}\n")
-		sem_tendencia = sem_sazonal[c] -(tendencia.slope + tendencia.intercept)# * len(sem_sazonal[c]))
-		anomalia_estacionaria[c] = sem_tendencia
-	else:
-		print(f"{red}Coluna Faltante: {c}\nINSUFICIÊNCIA DE DADOS!\n(Tamanho: {len(sem_sazonal[c])}).{reset}")
-print(f"\n{green}anomalia_estacionaria\n{reset}{anomalia_estacionaria}\n")
-meteoro["dia"] = dias
-meteoro_origem = meteoro.copy()
-#meteoro = meteoro.merge(anomalia, left_on = "dia", how = "left", suffixes = ("", "_anomal"), right_index = True)
-#meteoro.drop(columns = ["dia", "dia_anomal"], inplace = True)
-meteoro = meteoro.merge(anomalia_estacionaria, left_on = "dia", how = "left", suffixes = ("", "_aest"), right_index = True)
-meteoro.drop(columns = ["dia", "dia_aest"], inplace = True)
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
-print(f"\n{green}biometeoro\n{reset}{biometeoro}\n")
-#sys.exit()
-#
-# Saúde
+anomalia_estacionaria = pd.read_csv(f"{caminho_dados}{anomalia_estacionaria}", low_memory = False)
 bio = pd.read_csv(f"{caminho_dados}{bio}", low_memory = False)
-bio.rename(columns = {"CAUSABAS" : "causa"}, inplace = True)
-bio["data"] = pd.to_datetime(bio[["anoobito", "mesobito", "diaobito"]].astype(str).agg("-".join, axis = 1), format = "%Y-%m-%d")
-bio.reset_index(inplace = True)
-bio["obito"] = np.ones(len(bio)).astype(int)
-bio.drop(columns=["CODMUNRES", "diaobito", "mesobito", "anoobito"], inplace = True)
-bio = bio[["data", "obito", "sexo", "idade", "causa"]].sort_values(by = "data")
-print(f"\n{green}bio:\n{reset}{bio}\n")
-obito_total = bio.groupby(by = ["data"])["obito"].sum()
-obito_total = obito_total.reset_index()
-obito_total.columns = ["data", "obitos"]
-obito_total.to_csv(f"{caminho_dados}obito_total_{_cidade}.csv", index = False)
-obito_agrupado = bio.groupby(["data", "sexo", "idade"]).size()
-obito_agrupado = obito_agrupado.to_frame(name = "obito")
-obito_agrupado = obito_agrupado.reset_index().set_index("data")
-top20 = bio["causa"].value_counts().head(20)
-top20 = top20.index.tolist()
-print(f"\n{green}top20:\n{reset}{top20}\n")
-biotop20 = bio[bio["causa"].isin(top20)]
-print(f"\n{green}biotop20:\n{reset}{biotop20}\n")
-obito_agrupado_top20 = biotop20.groupby(["data", "sexo", "idade"]).size()
-obito_agrupado_top20 = obito_agrupado_top20.to_frame(name = "obito")
-obito_agrupado_top20 = obito_agrupado_top20.reset_index().set_index("data")
-troca_sexo = {"Feminino" : "F", "Masculino" : "M"}
-for sexo, letra in troca_sexo.items():
-	obito_agrupado_top20 = obito_agrupado_top20.replace(sexo, letra)
-obito_agrupado_top20["paciente"] = obito_agrupado_top20[["sexo", "idade"]].astype(str).agg("".join, axis = 1)
-obito_agrupado_top20.drop(columns = ["sexo", "idade"], inplace = True)
-obito_agrupado_top20 = obito_agrupado_top20.pivot_table(index = "data", columns = ["paciente"],
-														values = "obito", aggfunc = "sum", fill_value = 0)
-# Percentil 75
-p75 = pd.read_csv(f"{caminho_indices}{p75}", low_memory = False)
-print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
-print(f"\n{green}meteoro.info():\n{reset}{meteoro.info()}\n")
-print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
-print(f"\n{green}p75:\n{reset}{p75}\n")
-print(f"\n{green}obito_agrupado:\n{reset}{obito_agrupado}\n")
-print(f"\n{green}obito_agrupado_top20:\n{reset}{obito_agrupado_top20}\n")
+biometeoro = pd.read_csv(f"{caminho_dados}{biometeoro}", low_memory = False)
+
+print(f"\n{green}CLIMATOLOGIA:\n{reset}{clima}\n")
+print(f"\n{green}ANOMALIAS:\n{reset}{anomalia}\n")
+print(f"\n{green}ANOMALIAS ESTACIONÁRIAS\n{reset}{anomalia_estacionaria}\n")
+print(f"\n{green}DADOS DE SAÚDE:\n{reset}{bio}\n")
+print(f"\n{green}DADOS BIOMETEOROLÓGICOS:\n{reset}{biometeoro}\n")
+print(f"\n{green}COLUNAS DE DADOS BIOMETEOROLÓGICOS:\n{reset}{biometeoro.columns}\n")
 #sys.exit()
 
-#Implementar com sexo/idade/diferença²/anomaliaestacionária.
+### Pré-montando Datasets
 
-### Montando Datasets
-x1 = obito_total[["data","obitos"]]
-x1["data"] = pd.to_datetime(x1["data"])
-x2 = p75[["data", "total"]]
-x2.rename(columns = {"total": "totalp75"}, inplace = True)
-x2["data"] = pd.to_datetime(x2["data"])
-x3 = p75[["data","I219"]]
-x3.rename(columns = {"I219": "infarto_agudo_miocardio"}, inplace = True)
-x3["data"] = pd.to_datetime(x3["data"])
-print(f"\n{green}x1:\n{reset}{x1}\n")
-print(f"\n{green}x1.info():\n{reset}{x1.info()}\n")
-print(f"\n{green}x2:\n{reset}{x2}\n")
-print(f"\n{green}x2.info():\n{reset}{x2.info()}\n")
-print(f"\n{green}x3:\n{reset}{x3}\n")
-print(f"\n{green}x3.info():\n{reset}{x3.info()}\n")
-#dataset1 = x1.copy()
-dataset1 = meteoro.merge(x1[["data", "obitos"]], how = "right", on = "data")
-dataset1.dropna(inplace = True)
-dataset_original1 = dataset1.copy()
-#dataset2 = x2.copy()
-dataset2 = meteoro.merge(x2[["data", "totalp75"]], how = "right", on = "data")
-dataset2.dropna(inplace = True)
-dataset_original2 = dataset2.copy()
-#dataset3 = x3.copy()
-dataset3 = meteoro.merge(x3[["data", "infarto_agudo_miocardio"]], how = "right", on = "data")
-dataset3.dropna(inplace = True)
-dataset_original3 = dataset3.copy()
-print(f"\n{green}dataset1:\n{reset}{dataset1}\n")
-print(f"\n{green}dataset1.info():\n{reset}{dataset1.info()}\n")
-print(f"\n{green}dataset2:\n{reset}{dataset2}\n")
-print(f"\n{green}dataset2.info():\n{reset}{dataset2.info()}\n")
-print(f"\n{green}dataset3:\n{reset}{dataset3}\n")
-print(f"\n{green}dataset3.info():\n{reset}{dataset3.info()}\n")
-colunas_retroagir = meteoro.drop(columns = "data")
-colunas_retroagir = colunas_retroagir.columns
-print(f"\n{green}colunas_retroagir:\n{reset}{colunas_retroagir}\n")
-#sys.exit()
-"""
-dataset1.to_csv(f"{caminho_dados}{_cidade}_dataset1.csv", index = False)
-dataset2.to_csv(f"{caminho_dados}{_cidade}_dataset2.csv", index = False)
-dataset3.to_csv(f"{caminho_dados}{_cidade}_dataset3.csv", index = False)
-
-for r in range(_HORIZONTE + 1, _RETROAGIR + 1):
-    dataset[f"tmin_r{r}"] = dataset["tmin"].shift(-r)
-    dataset[f"temp_r{r}"] = dataset["temp"].shift(-r)
-    dataset[f"tmax_r{r}"] = dataset["tmax"].shift(-r)
-    dataset[f"amplitude_t_r{r}"] = dataset["amplitude_t"].shift(-r)
-    dataset[f"urmin_r{r}"] = dataset["urmin"].shift(-r)
-    dataset[f"umidade_r{r}"] = dataset["umidade"].shift(-r)
-    dataset[f"urmax_r{r}"] = dataset["urmax"].shift(-r)
-    dataset[f"prec_r{r}"] = dataset["prec"].shift(-r)
-    dataset[f"pressao_r{r}"] = dataset["pressao"].shift(-r)
-    dataset[f"ventodir_r{r}"] = dataset["ventodir"].shift(-r)
-    dataset[f"ventovel_r{r}"] = dataset["ventovel"].shift(-r)
-#dataset.drop(columns = ["tmin", "temp", "tmax",
-#						"urmin", "umidade", "urmax",
-#						"prec", "pressao", "ventodir",  "ventovel"], inplace = True)
-dataset.drop(columns = ["s_obito", "s_temp", "s_tmin", "s_tmax", "s_amplitude_t"], inplace = True)
+dataset = biometeoro.copy()
 dataset.dropna(inplace = True)
-data_dataset = dataset.copy()
-dataset.set_index("data", inplace = True)
-dataset.columns.name = f"{cidade}"
-"""
+dataset_original = dataset.copy()
 
-#sys.exit()
-"""
-### Dividindo Dataset em Treino e Teste
-
-SEED = np.random.seed(0)
-x = dataset.drop(columns = "obito")
-y = dataset["obito"]
-x_array = x.to_numpy().astype(int)
-y_array = y.to_numpy().astype(int)
-x_array = x_array.reshape(x_array.shape[0], -1)
-
-treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
-                                                        random_state = SEED,
-                                                        test_size = 0.2)
-"""
-"""
-z = 6850
-x_ate_limite = x.iloc[:-z]
-y_ate_limite = y.iloc[:-z]
-xlimite = x.iloc[-z:]
-ylimite = y.iloc[-z:]
-treino_x = x_ate_limite.copy()
-teste_x = xlimite.copy()
-treino_y = y_ate_limite.copy()
-teste_y = ylimite.copy()
-"""
-"""
-sobre = RandomOverSampler(sampling_strategy = "minority")
-sub = RandomUnderSampler(sampling_strategy = "majority")
-treino_x, treino_y = sobre.fit_resample(treino_x, treino_y)
-treino_x, treino_y = sub.fit_resample(treino_x, treino_y)
-
-explicativas = x.columns.tolist() # feature_names = explicativas
-treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
-treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-"""
-#print(f"""Conjunto de Treino com as Variáveis Explicativas (<{limite}):\n{treino_x}\n
-#Conjunto de Treino com as Variáveis Explicativas (>{fim}):\n{teste_x}\n 
-#Conjunto de Teste com a Variável Dependente (<{limite}):\n{treino_y}\n 
-#Conjunto de Teste com a Variável Dependente (>{fim}):\n{teste_y}\n
-#Conjunto de Treino com as Variáveis Explicativas (Explicitamente Indicadas)(<{limite}):\n{treino_x_explicado}\n""")
-#sys.exit()
-
-"""
-### Normalizando/Escalonando Dataset_x (Se Necessário)
-escalonador = StandardScaler()
-escalonador.fit(treino_x)
-treino_normal_x = escalonador.transform(treino_x)
-teste_normal_x = escalonador.transform(teste_x)
-
-### Exibindo Informações
-print("\n \n CONJUNTO DE DADOS PARA TREINO E TESTE \n")
-print(dataset.info())
-print("~"*80)
-#print(dataset.dtypes)
-#print("~"*80)
-print(dataset)
-#print("="*80)
-#print(f"X no formato numpy.ndarray: {x_array}.")
-print("="*80)
-print(f"Treinando com {len(treino_x)} elementos e testando com {len(teste_x)} elementos.") # Tamanho é igual para dados normalizados
-print(f"Formato dos dados (X) nas divisões treino: {treino_x.shape} e teste: {teste_x.shape}.")
-print(f"Formato dos dados (Y) nas divisões treino: {treino_y.shape} e teste: {teste_y.shape}.")
-print("="*80)
-
-### Dividindo Dataset em Treino e Teste
-SEED = np.random.seed(0)
-x = dataset.drop(columns = "obito")
-y = dataset["obito"]
-x_array = x.to_numpy().astype(int)
-y_array = y.to_numpy().astype(int)
-x_array = x_array.reshape(x_array.shape[0], -1)
-
-treino_x, teste_x, treino_y, teste_y = train_test_split(x_array, y_array,
-                                                        random_state = SEED,
-                                                        test_size = 0.2)
-explicativas = x.columns.tolist() # feature_names = explicativas
-treino_x_explicado = pd.DataFrame(treino_x, columns = explicativas)
-treino_x_explicado = treino_x_explicado.to_numpy().astype(int)
-
-### Normalizando/Escalonando Dataset_x (Se Necessário)
-escalonador = StandardScaler()
-escalonador.fit(treino_x)
-treino_normal_x = escalonador.transform(treino_x)
-teste_normal_x = escalonador.transform(teste_x)
-"""
-"""
-### Exibindo Informações
-print("\n \n CONJUNTO DE DADOS PARA TREINO E TESTE \n")
-print(dataset.info())
-print("~"*80)
-#print(dataset.dtypes)
-#print("~"*80)
-print(dataset)
-print("="*80)
-print("\ntreino_x\n", treino_x)
-print("\nteste_x\n", teste_x)
-print("\ntreino_y\n", treino_y)
-print("\nteste_y\n" , teste_y)
-#print(f"X no formato numpy.ndarray: {x_array}.")
-print("="*80)
-print(f"Treinando com {len(treino_x)} elementos e testando com {len(teste_x)} elementos.") # Tamanho é igual para dados normalizados
-print(f"Formato dos dados (X) nas divisões treino: {treino_x.shape} e teste: {teste_x.shape}.")
-print(f"Formato dos dados (Y) nas divisões treino: {treino_y.shape} e teste: {teste_y.shape}.")
-print("="*80)
-"""
-#sys.exit()
+colunas_retroagir = ["heat_index", "wind_chill", "tmin", "temp", "tmax",
+					"amplitude_t", "urmin", "umidade", "urmax", "prec", "pressao",
+					"ventodir", "ventovel"]
 
 #########################################################FUNÇÕES###############################################################
 ### Definições
@@ -411,8 +138,8 @@ def seleciona_periodo(dataset, str_periodo):
 def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
 	SEED = np.random.seed(0)
 	if n_dataset == 1:
-		x = dataset.drop(columns = "obitos")
-		y = dataset["obitos"]
+		x = dataset.drop(columns = ["data", "obito"])
+		y = dataset["obito"]
 	elif n_dataset == 2:
 		x = dataset.drop(columns = "totalp75")
 		y = dataset["totalp75"]
@@ -421,6 +148,8 @@ def treino_teste(n_dataset, dataset, cidade, tamanho_teste = 0.2):
 		y = dataset["infarto_agudo_miocardio"]
 	else:
 		print(f"\n{red}DATASET NÃO ENCONTRADO!\n{reset}")
+	print(f"\n{green}x:\n{reset}{x}\n")
+	print(f"\n{green}y:\n{reset}{y}\n")	
 	#x_array = x.to_numpy()
 	#x_array = x_array.reshape(x_array.shape[0], -1)
 	x_array = x.to_numpy().astype(int)
@@ -728,352 +457,29 @@ def salva_modeloRF(n_dataset, modelo, cidade):
 	print("\n" + f"{green}={cyan}={reset}"*80 + "\n")
 
 ######################################################RANDOM_FOREST############################################################
-"""
-### Instanciando e Treinando Modelo Regressor Random Forest
-modeloRF = RandomForestRegressor(n_estimators = 100, random_state = SEED) #n_estimators = número de árvores
-modeloRF.fit(treino_x_explicado, treino_y)
-#modeloRF.salva_modelo("RF")
-joblib.dump(modeloRF, f"{caminho_modelos}RF_obitos_r{_RETROAGIR}_{_cidade}.h5")
 
-### Testando e Avaliando
-y_previstoRF = modeloRF.predict(teste_x)
-EQM_RF = mean_squared_error(teste_y, y_previstoRF)
-RQ_EQM_RF = np.sqrt(EQM_RF)
-R_2 = round(r2_score(teste_y, y_previstoRF), 2)#.round(2) 
-
-### Testando e Validando Modelo
-testesRF = modeloRF.predict(teste_x)
-previsoesRF = modeloRF.predict(x)
-previsoesRF = [int(p) for p in previsoesRF]
-
-### Exibindo Informações, Gráficos e Métricas
-lista_previsao(previsoesRF, 5, "RF")
-grafico_previsao(previsoesRF, testesRF, "RF")
-metricas("RF")
-
-importancias, indices, variaveis_importantes =  metricas_importancias(modeloRF, explicativas)
-unica_arvore, relatorio_decisao = caminho_decisao(x, modeloRF, explicativas)
-sys.exit()
-"""
-#########################################################AUTOMATIZANDO###############################################################
-if _AUTOMATIZAR == True:
-	for cidade in cidades:
-		#caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude/"
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/anomalia_estacionaria/"
-		if not os.path.exists(caminho_resultados):
-			os.makedirs(caminho_resultados)
-		#caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/anomalia_estacionaria/"
-		if not os.path.exists(caminho_modelos):
-			os.makedirs(caminho_modelos)		
-		dataset_inicio1 = dataset_original1.copy()
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset1, previsoes1, 5, teste_y1, y_previsto1)
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset3, previsoes3, 5, teste_y3, y_previsto3)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
-		if not os.path.exists(caminho_shap):
-			os.makedirs(caminho_shap)
-		metrica_shap(1, modelo1, df1, teste_x1)
-		metrica_shap(2, modelo2, df2, teste_x2)
-		metrica_shap(3, modelo3, df3, teste_x3)
-		"""
-		grafico_previsao(1, dataset1, previsoes1, R_2_1)
-		grafico_previsao(2, dataset2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset3, previsoes3, R_2_3)
-		"""
-		#sys.exit()
-		salva_modeloRF(1, modelo1, cidade)
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-		"""
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/periodo_quente/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/periodo_quente/"
-		print(f"\n{green}dataset_original1:\n{reset}{dataset_original1}\n")
-
-		dataset_inicio1 = dataset_original1.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-
-		dataset_q1 = seleciona_periodo(dataset1, "quente")
-
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset_q1, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset_q1, previsoes1, 5, teste_y1, y_previsto1)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		grafico_previsao(1, dataset_q1, previsoes1, R_2_1)
-		salva_modeloRF(1, modelo1, cidade)
-
-		print(f"\n{green}dataset_original2:\n{reset}{dataset_original2}\n")
-		print(f"\n{green}dataset_original3:\n{reset}{dataset_original3}\n")
-
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-
-		dataset_q2 = seleciona_periodo(dataset2, "quente")
-		dataset_q3 = seleciona_periodo(dataset3, "quente")
-
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset_q2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset_q3, cidade)
-
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset_q2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset_q3, previsoes3, 5, teste_y3, y_previsto3)
-
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-
-		grafico_previsao(2, dataset_q2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset_q3, previsoes3, R_2_3)
-		#sys.exit()
-
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-		"""
-		#caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/indice_amplitude_pfrio/"
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/anomalia_estacionaria_pfrio/"
-		if not os.path.exists(caminho_resultados):
-			os.makedirs(caminho_resultados)
-		#caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude_pfrio/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/anomalia_estacionaria_pfrio/"
-		if not os.path.exists(caminho_modelos):
-			os.makedirs(caminho_modelos)
-		dataset_inicio1 = dataset_original1.copy()
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-		dataset_f1 = seleciona_periodo(dataset1, "frio")
-		dataset_f2 = seleciona_periodo(dataset2, "frio")
-		dataset_f3 = seleciona_periodo(dataset3, "frio")
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset_f1, previsoes1, 5, teste_y1, y_previsto1)
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset_f2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset_f3, previsoes3, 5, teste_y3, y_previsto3)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		metrica_shap(1, modelo1, df1, teste_x1)
-		metrica_shap(2, modelo2, df2, teste_x2)
-		metrica_shap(3, modelo3, df3, teste_x3)
-		"""
-		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
-		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset_f3, previsoes3, R_2_3)
-		"""
-		#sys.exit()
-		salva_modeloRF(1, modelo1, cidade)
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-
-##### ANOMALIA
-print(f"\n{green}meteoro_origem\n{reset}{meteoro_origem}\n")
-print(f"\n{green}anomalia\n{reset}{anomalia}\n")
-meteoro = meteoro_origem.merge(anomalia, left_on = "dia", how = "left", suffixes = ("", "_anomal"), right_index = True)
-meteoro.drop(columns = ["dia", "dia_anomal", "Unnamed: 0"], inplace = True) #"Unnamed: 0_anomal"
-print(f"\n{green}meteoro\n{reset}{meteoro}\n")
+caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/modelagem/"
+if not os.path.exists(caminho_resultados):
+	os.makedirs(caminho_resultados)
+#caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/indice_amplitude/"
+caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/modelos/"
+if not os.path.exists(caminho_modelos):
+	os.makedirs(caminho_modelos)		
+dataset = dataset_original.copy()
+x, y, treino_x, teste_x, treino_y, teste_y, treino_x_explicado, df, explicativas, SEED = treino_teste(1, dataset, cidade) # 1 = "obitos"
+modelo, y_previsto, previsoes = RF_modela_treina_preve(x, treino_x_explicado, treino_y, teste_x, SEED)
+EQM, RQ_EQM, R_2 = RF_previsao_metricas(1, dataset, previsoes, 5, teste_y, y_previsto)
+metricas_importancias(1, modelo, explicativas, teste_x, teste_y)
+caminho_shap = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/SHAP/"
+if not os.path.exists(caminho_shap):
+	os.makedirs(caminho_shap)
+metrica_shap(1, modelo1, df1, teste_x1)
+metrica_shap(2, modelo2, df2, teste_x2)
+metrica_shap(3, modelo3, df3, teste_x3)
 #sys.exit()
-#
-# Saúde
-print(f"\n{green}bio:\n{reset}{bio}\n")
-# Percentil 75
-print(f"\n{green}meteoro:\n{reset}{meteoro}\n")
-print(f"\n{green}meteoro.info():\n{reset}{meteoro.info()}\n")
-print(f"\n{green}obito_total:\n{reset}{obito_total}\n")
-print(f"\n{green}p75:\n{reset}{p75}\n")
-print(f"\n{green}obito_agrupado:\n{reset}{obito_agrupado}\n")
-print(f"\n{green}obito_agrupado_top20:\n{reset}{obito_agrupado_top20}\n")
-#sys.exit()
+salva_modeloRF(1, modelo1, cidade)
+salva_modeloRF(2, modelo2, cidade)
+salva_modeloRF(3, modelo3, cidade)
 
-#Implementar com sexo/idade/diferença²/anomaliaestacionária.
-
-### Montando Datasets
-x1 = obito_total[["data","obitos"]]
-x1["data"] = pd.to_datetime(x1["data"])
-x2 = p75[["data", "total"]]
-x2.rename(columns = {"total": "totalp75"}, inplace = True)
-x2["data"] = pd.to_datetime(x2["data"])
-x3 = p75[["data","I219"]]
-x3.rename(columns = {"I219": "infarto_agudo_miocardio"}, inplace = True)
-x3["data"] = pd.to_datetime(x3["data"])
-print(f"\n{green}x1:\n{reset}{x1}\n")
-print(f"\n{green}x1.info():\n{reset}{x1.info()}\n")
-print(f"\n{green}x2:\n{reset}{x2}\n")
-print(f"\n{green}x2.info():\n{reset}{x2.info()}\n")
-print(f"\n{green}x3:\n{reset}{x3}\n")
-print(f"\n{green}x3.info():\n{reset}{x3.info()}\n")
-#dataset1 = x1.copy()
-dataset1 = meteoro.merge(x1[["data", "obitos"]], how = "right", on = "data")
-dataset1.dropna(inplace = True)
-dataset_original1 = dataset1.copy()
-#dataset2 = x2.copy()
-dataset2 = meteoro.merge(x2[["data", "totalp75"]], how = "right", on = "data")
-dataset2.dropna(inplace = True)
-dataset_original2 = dataset2.copy()
-#dataset3 = x3.copy()
-dataset3 = meteoro.merge(x3[["data", "infarto_agudo_miocardio"]], how = "right", on = "data")
-dataset3.dropna(inplace = True)
-dataset_original3 = dataset3.copy()
-print(f"\n{green}dataset1:\n{reset}{dataset1}\n")
-print(f"\n{green}dataset1.info():\n{reset}{dataset1.info()}\n")
-print(f"\n{green}dataset2:\n{reset}{dataset2}\n")
-print(f"\n{green}dataset2.info():\n{reset}{dataset2.info()}\n")
-print(f"\n{green}dataset3:\n{reset}{dataset3}\n")
-print(f"\n{green}dataset3.info():\n{reset}{dataset3.info()}\n")
-colunas_retroagir = meteoro.drop(columns = "data")
-colunas_retroagir = colunas_retroagir.columns
-print(f"\n{green}colunas_retroagir:\n{reset}{colunas_retroagir}\n")
-#sys.exit()
-
-
-if _AUTOMATIZAR == True:
-	for cidade in cidades:
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/anomalia/"
-		if not os.path.exists(caminho_resultados):
-			os.makedirs(caminho_resultados)
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/anomalia/"
-		if not os.path.exists(caminho_modelos):
-			os.makedirs(caminho_modelos)		
-		dataset_inicio1 = dataset_original1.copy()
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset3, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset1, previsoes1, 5, teste_y1, y_previsto1)
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset3, previsoes3, 5, teste_y3, y_previsto3)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		metrica_shap(1, modelo1, df1, teste_x1)
-		metrica_shap(2, modelo2, df2, teste_x2)
-		metrica_shap(3, modelo3, df3, teste_x3)
-		"""
-		grafico_previsao(1, dataset1, previsoes1, R_2_1)
-		grafico_previsao(2, dataset2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset3, previsoes3, R_2_3)
-		"""
-		#sys.exit()
-		salva_modeloRF(1, modelo1, cidade)
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-		"""
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/periodo_quente/"
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/periodo_quente/"
-		print(f"\n{green}dataset_original1:\n{reset}{dataset_original1}\n")
-
-		dataset_inicio1 = dataset_original1.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-
-		dataset_q1 = seleciona_periodo(dataset1, "quente")
-
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, explicativas1, SEED = treino_teste(1, dataset_q1, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset_q1, previsoes1, 5, teste_y1, y_previsto1)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		grafico_previsao(1, dataset_q1, previsoes1, R_2_1)
-		salva_modeloRF(1, modelo1, cidade)
-
-		print(f"\n{green}dataset_original2:\n{reset}{dataset_original2}\n")
-		print(f"\n{green}dataset_original3:\n{reset}{dataset_original3}\n")
-
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-
-		dataset_q2 = seleciona_periodo(dataset2, "quente")
-		dataset_q3 = seleciona_periodo(dataset3, "quente")
-
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, explicativas2, SEED = treino_teste(2, dataset_q2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, explicativas3, SEED = treino_teste(3, dataset_q3, cidade)
-
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset_q2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset_q3, previsoes3, 5, teste_y3, y_previsto3)
-
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-
-		grafico_previsao(2, dataset_q2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset_q3, previsoes3, R_2_3)
-		#sys.exit()
-
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-		"""
-		caminho_resultados = "/home/sifapsc/scripts/matheus/RS_saude_precisao/resultados/porto_alegre/anomalia_pfrio/"
-		if not os.path.exists(caminho_resultados):
-			os.makedirs(caminho_resultados)
-		caminho_modelos = "/home/sifapsc/scripts/matheus/RS_saude_precisao/modelos/anomalia_pfrio/"
-		if not os.path.exists(caminho_modelos):
-			os.makedirs(caminho_modelos)
-		dataset_inicio1 = dataset_original1.copy()
-		dataset_inicio2 = dataset_original2.copy()
-		dataset_inicio3 = dataset_original3.copy()
-		dataset1 = monta_dataset(dataset_inicio1)
-		dataset2 = monta_dataset(dataset_inicio2)
-		dataset3 = monta_dataset(dataset_inicio3)
-		dataset_f1 = seleciona_periodo(dataset1, "frio")
-		dataset_f2 = seleciona_periodo(dataset2, "frio")
-		dataset_f3 = seleciona_periodo(dataset3, "frio")
-		x1, y1, treino_x1, teste_x1, treino_y1, teste_y1, treino_x_explicado1, df1, explicativas1, SEED = treino_teste(1, dataset_f1, cidade)
-		x2, y2, treino_x2, teste_x2, treino_y2, teste_y2, treino_x_explicado2, df2, explicativas2, SEED = treino_teste(2, dataset_f2, cidade)
-		x3, y3, treino_x3, teste_x3, treino_y3, teste_y3, treino_x_explicado3, df3, explicativas3, SEED = treino_teste(3, dataset_f3, cidade)
-		modelo1, y_previsto1, previsoes1 = RF_modela_treina_preve(x1, treino_x_explicado1, treino_y1, teste_x1, SEED)
-		modelo2, y_previsto2, previsoes2 = RF_modela_treina_preve(x2, treino_x_explicado2, treino_y2, teste_x2, SEED)
-		modelo3, y_previsto3, previsoes3 = RF_modela_treina_preve(x3, treino_x_explicado3, treino_y3, teste_x3, SEED)
-		EQM1, RQ_EQM1, R_2_1 = RF_previsao_metricas(1, dataset_f1, previsoes1, 5, teste_y1, y_previsto1)
-		EQM2, RQ_EQM2, R_2_2 = RF_previsao_metricas(2, dataset_f2, previsoes2, 5, teste_y2, y_previsto2)		
-		EQM3, RQ_EQM3, R_2_3 = RF_previsao_metricas(3, dataset_f3, previsoes3, 5, teste_y3, y_previsto3)
-		metricas_importancias(1, modelo1, explicativas1, teste_x1, teste_y1)
-		metricas_importancias(2, modelo2, explicativas2, teste_x2, teste_y2)
-		metricas_importancias(3, modelo3, explicativas3, teste_x3, teste_y3)
-		metrica_shap(1, modelo1, df1, teste_x1)
-		metrica_shap(2, modelo2, df2, teste_x2)
-		metrica_shap(3, modelo3, df3, teste_x3)
-		"""
-		grafico_previsao(1, dataset_f1, previsoes1, R_2_1)
-		grafico_previsao(2, dataset_f2, previsoes2, R_2_2)
-		grafico_previsao(3, dataset_f3, previsoes3, R_2_3)
-		"""
-		#sys.exit()
-		salva_modeloRF(1, modelo1, cidade)
-		salva_modeloRF(2, modelo2, cidade)
-		salva_modeloRF(3, modelo3, cidade)
-		
 ######################################################################################################################################
 
