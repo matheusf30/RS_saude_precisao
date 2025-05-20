@@ -89,6 +89,7 @@ biometeoro2.reset_index(inplace = True)
 print(f"\n{green}PORTO ALEGRE (Série Temporal)\n{reset}{biometeoro}\n")
 print(f"\n{green}PORTO ALEGRE (2001-2011)\n{reset}{biometeoro1}\n")
 print(f"\n{green}PORTO ALEGRE (2012-2022)\n{reset}{biometeoro2}\n")
+print(f"\n{green}PORTO ALEGRE (CLIMA)\n{reset}{clima}\n")
 #print(f"\n{green}PORTO ALEGRE (Índices Simplificados)\n{reset}{biometeoro[['heat_index', 'wind_chill']]}\n")
 #sys.exit()
 
@@ -98,14 +99,13 @@ for idx, biometeoro0 in enumerate(periodos):
 	### Visualização Gráfica
 	fig, axs = plt.subplots(2, 1, figsize = (12, 6), layout = "tight", frameon = False,  sharex = True)
 	axs[0].set_facecolor("honeydew") #.gcf()
-	axs[0].legend(loc = "upper center")
-	axs[0].legend(loc = "lower left")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["tmax"].rolling(30).mean(),  ax = axs[0],
 					color = "red", linewidth = 1.5, label = "Temperatura Máxima")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["temp"].rolling(30).mean(),  ax = axs[0],
 					color = "orange", linewidth = 1.5, label = "Temperatura Média")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["tmin"].rolling(30).mean(),  ax = axs[0],
 					color = "darkblue", linewidth = 1.5, label = "Temperatura Mínima")
+	axs[0].legend(loc = "upper right")
 	"""
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["heat_index"],  ax = axs[0],
 					color = "red", linewidth = 1.8, linestyle = ":", label = "Heat Index")
@@ -122,7 +122,6 @@ for idx, biometeoro0 in enumerate(periodos):
 	axs[1].set_facecolor("honeydew")
 	ax3 = axs[1].twinx()
 	ax3.set_ylabel("Precipitação (mm)")
-	ax3.legend(loc = "upper right")
 	"""
 	sns.barplot(x = biometeoro0["data"], y = biometeoro0["prec"],  ax = ax3,
 					color = "royalblue", linewidth = 1.5, alpha = 0.8, label = "Precipitação")
@@ -132,10 +131,11 @@ for idx, biometeoro0 in enumerate(periodos):
 	"""
 	ax3.bar(biometeoro0["data"], biometeoro0["prec"].rolling(30).mean(),#  ax = ax3,
 					color = "royalblue", width = 1.5, alpha = 0.5, label = "Precipitação")
+	ax3.legend(loc = "upper right")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["urmax"].rolling(30).mean(),  ax = axs[1],
 					color = "red", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Máxima")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["umidade"].rolling(30).mean(),  ax = axs[1],
-					color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa")
+					color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Média")
 	sns.lineplot(x = biometeoro0["data"], y = biometeoro0["urmin"].rolling(30).mean(),  ax = axs[1],
 					color = "darkblue", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Mínima")
 	axs[1].set_ylabel("Umidade Relativa (%)")
@@ -211,7 +211,7 @@ ax3.legend(loc = "upper right")
 sns.lineplot(x = clima.index, y = clima["urmax"],  ax = axs[1],
 				color = "red", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Máxima")
 sns.lineplot(x = clima.index, y = clima["umidade"],  ax = axs[1],
-				color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa")
+				color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Média")
 sns.lineplot(x = clima.index, y = clima["urmin"],  ax = axs[1],
 				color = "darkblue", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Mínima")
 axs[1].set_ylabel("Umidade Relativa (%)")
@@ -237,7 +237,7 @@ plt.show()
 #sys.exit()
 
 ### Pré-Processamento (Climatologia MÊS)
-clima_mes = clima.drop(columns = "dia.1")
+clima_mes = clima.drop(columns = "Unnamed: 0")
 clima_mes["data"] = clima_mes["dia"].apply(lambda x: datetime(2020, 1, 1) + timedelta(days=int(x) - 1))
 clima_mes["mes"] = clima_mes["data"].dt.month
 clima_mes.drop(columns = ["dia", "data"], inplace = True)
@@ -284,7 +284,7 @@ sns.barplot(x = clima_mes.index.astype(str), ci = None, y = clima_mes["prec"],  
 sns.lineplot(x = clima_mes.index, y = clima_mes["urmax"],  ax = axs[1],
 				color = "red", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Máxima")
 sns.lineplot(x = clima_mes.index, y = clima_mes["umidade"],  ax = axs[1],
-				color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa")
+				color = "orange", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Média")
 sns.lineplot(x = clima_mes.index, y = clima_mes["urmin"],  ax = axs[1],
 				color = "darkblue", linewidth = 1.5, linestyle = "--", label = "Umidade Relativa Mínima")
 axs[1].set_ylabel("Umidade Relativa (%)")
