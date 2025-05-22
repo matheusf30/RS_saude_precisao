@@ -392,7 +392,9 @@ print("\nanomalia_estacionaria_set\n", anomalia_estacionaria_set)
 correlacao_dataset = anomalia_estacionaria_set.corr(method = f"{_METODO}")
 fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = False)
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
-sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral", vmin = -1, vmax = 1, linewidth = 0.5, mask = filtro)
+sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
+			vmin = -1, vmax = 1, linewidth = 0.5,
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
