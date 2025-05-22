@@ -216,7 +216,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -245,7 +245,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS DURANTE ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -274,7 +274,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE ABRIL E SETEMBRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -305,7 +305,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -334,7 +334,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS DURANTE ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -363,7 +363,7 @@ for _METODO in lista_METODO:
 	filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 	sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 				vmin = -1, vmax = 1, linewidth = 0.5,
-				mask = filtro, annot_kws={"size": 8})
+				mask = filtro, annot_kws={"size": 6})
 	fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS ENTRE DEZEMBRO E FEVEREIRO.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.",
 					weight = "bold", size = "medium")
 	ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
@@ -419,7 +419,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -446,7 +446,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -476,7 +476,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -502,7 +502,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -528,7 +528,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE ANOMALIAS ESTACIONÁRIAS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -557,7 +557,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -583,7 +583,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -609,7 +609,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -638,7 +638,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[0]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -664,7 +664,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[1]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
@@ -690,7 +690,7 @@ fig, ax = plt.subplots(figsize = (18, 8), layout = "constrained", frameon = Fals
 filtro = np.triu(np.ones_like(correlacao_dataset, dtype = bool), k = 1)
 sns.heatmap(correlacao_dataset, annot = True, cmap = "Spectral",
 			vmin = -1, vmax = 1, linewidth = 0.5,
-			mask = filtro, annot_kws={"size": 8})
+			mask = filtro, annot_kws={"size": 6})
 fig.suptitle(f"MATRIZ DE CORRELAÇÃO DE {_METODO.upper()} DE DADOS BRUTOS EM 2022.\nMUNICÍPIO DE PORTO ALEGRE, RETROAGINDO ATÉ {_retroceder[2]} DIAS.", weight = "bold", size = "medium")
 ax.set_yticklabels(ax.get_yticklabels(), rotation = "horizontal")
 ax.set_xticklabels(ax.get_xticklabels(), rotation = 75)
